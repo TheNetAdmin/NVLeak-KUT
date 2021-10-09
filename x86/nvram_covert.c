@@ -6,9 +6,25 @@ static void check_memory_size(void)
 	phys_alloc_show();
 }
 
+static phys_addr_t nvram_start = 0x100000000;
+
+static void test_write_nvram(void)
+{
+	u64 data = 0x1234432112344321;
+	u64 *addr = (u64 *)nvram_start;
+
+	addr[0] = data;
+	asm volatile("clflush (%0)\n"
+		     "mfence\n"
+		     :
+		     : "b"(&addr[0]));
+	printf("Write data [0x%016lx] to addr [0x%016lx]\n", data, (u64)(&addr[0]));
+}
+
 int main(int argc, char **argv)
 {
 	report(true, "NVRAM covert channel boot up.");
 	check_memory_size();
+	test_write_nvram();
 	return report_summary();
 }
