@@ -1,14 +1,21 @@
 #include "libcflat.h"
-#include "alloc_phys.h"
-
-static void check_memory_size(void)
-{
-	phys_alloc_show();
-}
 
 static phys_addr_t nvram_start = 0x100000000;
 
-static void test_write_nvram(void)
+static bool test_read_nvram(void)
+{
+	u64 data = 0;
+	u64 *addr = (u64 *)nvram_start;
+	data = addr[0];
+	printf("Read data [0x%016lx] from addr [0x%016lx]\n", data, (u64)(&addr[0]));
+
+	if (data == 0xffffffffffffffff)
+		return true;
+	else
+		return false;
+}
+
+static bool test_write_nvram(void)
 {
 	u64 data = 0x1234432112344321;
 	u64 *addr = (u64 *)nvram_start;
@@ -19,12 +26,13 @@ static void test_write_nvram(void)
 		     :
 		     : "b"(&addr[0]));
 	printf("Write data [0x%016lx] to addr [0x%016lx]\n", data, (u64)(&addr[0]));
+	return true;
 }
 
 int main(int argc, char **argv)
 {
 	report(true, "NVRAM covert channel boot up.");
-	check_memory_size();
-	test_write_nvram();
+	report(test_read_nvram(), "Reading data from NVRAM");
+	report(test_write_nvram(), "Writing data to NVRAM");
 	return report_summary();
 }

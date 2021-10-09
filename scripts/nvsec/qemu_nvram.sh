@@ -38,6 +38,7 @@ make -j 10 "x86/${kernel_file}" || exit 1
 popd || exit 1
 
 # Check if PMEM is mounted
+echo "Check if PMEM is mounted"
 dax_mnt="/mnt/dax"
 dax_mounted="$(mount -v | grep -c "${dax_mnt}")"
 if [ "${dax_mounted}" -ne 1 ]; then
@@ -54,6 +55,7 @@ ram_max_size="2G" # >= $ram_size + $nvram_size
 nvram_size="1G"
 nvram_backend_file="/${dax_mnt}/data_${label}"
 
+# QEMU args
 qemu_comm_args=""
 qemu_comm_args+=" -machine pc,nvdimm,accel=kvm"
 qemu_comm_args+=" -m ${ram_size},slots=${ram_slots},maxmem=${ram_max_size}"
@@ -73,6 +75,13 @@ else
 	qemu_command+=" --no-reboot -vnc none -curses -net none -monitor telnet:127.0.0.1:1234,server,nowait"
 	qemu_command+=" ${qemu_comm_args}"
 fi
+
+
+echo "Creating NVDIMM backend file"
+fallocate -l "${nvram_size}" "${nvram_backend_file}"
+
+echo "Dump magic data to the backend file"
+echo -n "0: ffff ffff ffff ffff" | xxd -r - "${nvram_backend_file}"
 
 # Run QEMU in TMUX
 echo "Starting the QEMU"
