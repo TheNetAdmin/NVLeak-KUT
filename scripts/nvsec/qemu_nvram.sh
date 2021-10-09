@@ -76,7 +76,6 @@ else
 	qemu_command+=" ${qemu_comm_args}"
 fi
 
-
 echo "Creating NVDIMM backend file"
 fallocate -l "${nvram_size}" "${nvram_backend_file}"
 
