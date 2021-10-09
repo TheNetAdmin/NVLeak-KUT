@@ -13,6 +13,7 @@ if [ $# -ne 1 ]; then
 fi
 
 label="${1}"
+debug="${debug:-off}"
 
 case "${label}" in
 	sender)
@@ -44,25 +45,34 @@ if [ "${dax_mounted}" -ne 1 ]; then
 	exit 1
 fi
 
-# qemu="qemu-system-x86_64"
+# RAM configs
 ram_size="1G"
-ram_slots="2" # >= number of ram + number of nvram
+ram_slots="2"     # >= number of ram + number of nvram
 ram_max_size="2G" # >= $ram_size + $nvram_size
 
+# QEMU configs
 nvram_size="1G"
 nvram_backend_file="/${dax_mnt}/data_${label}"
 
-read -r -d '' qemu_command << EOM
-x86/run \
-	"${kernel_path}" \
-	-machine pc,nvdimm,accel=kvm \
-	-m ${ram_size},slots=${ram_slots},maxmem=${ram_max_size} \
-	-object memory-backend-file,id=mem1,share=on,mem-path="${nvram_backend_file}",size=${nvram_size} \
-	-device nvdimm,id=nvdimm1,memdev=mem1 \
-;
-EOM
+qemu_comm_args=""
+qemu_comm_args+=" -machine pc,nvdimm,accel=kvm"
+qemu_comm_args+=" -m ${ram_size},slots=${ram_slots},maxmem=${ram_max_size}"
+qemu_comm_args+=" -object memory-backend-file,id=mem1,share=on,mem-path="${nvram_backend_file}",size=${nvram_size}"
+qemu_comm_args+=" -device nvdimm,id=nvdimm1,memdev=mem1"
 
-bash_run="env -i bash --norc --noprofile"
+## NVDIMM as separate numa node
+# qemu_comm_args+=" -numa node,nodeid=0,mem=1G"
+# qemu_comm_args+=" -numa node,nodeid=1,mem=0"
+# qemu_comm_args+=" -device nvdimm,id=nvdimm1,memdev=mem1,node=1"
+
+if [ "${debug}" == "off" ]; then
+	qemu_command="x86/run ${kernel_path}"
+	qemu_command+=" ${qemu_comm_args}"
+else
+	qemu_command="qemu-system-x86_64"
+	qemu_command+=" --no-reboot -vnc none -curses -net none -monitor telnet:127.0.0.1:1234,server,nowait"
+	qemu_command+=" ${qemu_comm_args}"
+fi
 
 # Run QEMU in TMUX
 echo "Starting the QEMU"
@@ -70,7 +80,12 @@ tmux_session_name="cross-vm-covert-${label}"
 tmux set-option remain-on-exit on
 
 tmux start-server
-tmux new-session -d -s "${tmux_session_name}" "${bash_run}"
+tmux new-session -d -s "${tmux_session_name}"
 tmux send-keys -t "${tmux_session_name}" "${qemu_command}"
 tmux send-keys -t "${tmux_session_name}" Enter
+if [ "${debug}" == "on" ]; then
+	tmux splitw -h -p 50
+	tmux send-keys -t "${tmux_session_name}" "sleep 2; telnet 127.0.0.1 1234"
+	tmux send-keys -t "${tmux_session_name}" Enter
+fi
 tmux -2 attach-session -d

@@ -1,3 +1,4 @@
+.vscode/**
 tags
 .gdbinit
 *.a
