@@ -37,12 +37,31 @@ pushd "$(dirname "${kernel_path}")/../" || exit 1
 make -j 10 "x86/${kernel_file}" || exit 1
 popd || exit 1
 
-# Check if PMEM is mounted
-echo "Check if PMEM is mounted"
-dax_mnt="/mnt/dax"
-dax_mounted="$(mount -v | grep -c "${dax_mnt}")"
-if [ "${dax_mounted}" -ne 1 ]; then
-	echo "Please check if pmem is mounted at ${dax_mnt}"
+# # Check if PMEM is mounted
+# echo "Check if PMEM is mounted"
+# dax_mnt="/mnt/dax"
+# dax_mounted="$(mount -v | grep -c "${dax_mnt}")"
+# if [ "${dax_mounted}" -ne 1 ]; then
+# 	echo "Please check if pmem is mounted at ${dax_mnt}"
+# 	exit 1
+# fi
+
+# QEMU NVDIMM backends
+
+echo "Searching NVDIMM backend device"
+backend_name="dax-${label}"
+backend_dev=$(ndctl list --namespaces | jq -r ".[] | select(.name == \"${backend_name}\") | .chardev")
+if [ $? -ne 0 ]; then
+	echo "Failed searching namespace with name: ${backend_name}"
+	exit 1
+fi
+if [ -z "${backend_dev}" ]; then
+	echo "Backend not found: ${backend_dev}"
+	exit 1
+fi
+backend_dev="/dev/${backend_dev}"
+if [ ! -c "${backend_dev}" ]; then
+	echo "Backend device not found: ${backend_dev}"
 	exit 1
 fi
 
@@ -51,15 +70,18 @@ ram_size="1G"
 ram_slots="2"     # >= number of ram + number of nvram
 ram_max_size="2G" # >= $ram_size + $nvram_size
 
+# QEMU path
+export QEMU="../qemu/build/x86_64-softmmu/qemu-system-x86_64"
+
 # QEMU configs
 nvram_size="1G"
-nvram_backend_file="/${dax_mnt}/data_${label}"
+nvram_align_size="1G"
 
 # QEMU args
 qemu_comm_args=""
 qemu_comm_args+=" -machine pc,nvdimm,accel=kvm"
 qemu_comm_args+=" -m ${ram_size},slots=${ram_slots},maxmem=${ram_max_size}"
-qemu_comm_args+=" -object memory-backend-file,id=mem1,share=on,mem-path="${nvram_backend_file}",size=${nvram_size}"
+qemu_comm_args+=" -object memory-backend-file,id=mem1,share=on,mem-path=\"${backend_dev}\",size=${nvram_size},align=${nvram_align_size}"
 qemu_comm_args+=" -device nvdimm,id=nvdimm1,memdev=mem1"
 
 ## NVDIMM as separate numa node
@@ -76,11 +98,8 @@ else
 	qemu_command+=" ${qemu_comm_args}"
 fi
 
-echo "Creating NVDIMM backend file"
-fallocate -l "${nvram_size}" "${nvram_backend_file}"
-
 echo "Dump magic data to the backend file"
-echo -n "0: ffff ffff ffff ffff" | xxd -r - "${nvram_backend_file}"
+echo -n "0: ffff ffff ffff ffff" | xxd -r - "${backend_dev}"
 
 # Run QEMU in TMUX
 echo "Starting the QEMU"
@@ -89,6 +108,7 @@ tmux set-option remain-on-exit on
 
 tmux start-server
 tmux new-session -d -s "${tmux_session_name}"
+tmux send-keys -t "${tmux_session_name}" "export QEMU=\"${QEMU}\"" Enter
 tmux send-keys -t "${tmux_session_name}" "${qemu_command}"
 tmux send-keys -t "${tmux_session_name}" Enter
 if [ "${debug}" == "on" ]; then
