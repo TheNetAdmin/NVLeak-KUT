@@ -79,6 +79,7 @@ nvram_align_size="1G"
 
 # QEMU args
 qemu_comm_args=""
+qemu_comm_args+=" -cpu max"
 qemu_comm_args+=" -machine pc,nvdimm,accel=kvm"
 qemu_comm_args+=" -m ${ram_size},slots=${ram_slots},maxmem=${ram_max_size}"
 qemu_comm_args+=" -object memory-backend-file,id=mem1,share=on,mem-path=\"${backend_dev}\",size=${nvram_size},align=${nvram_align_size}"
@@ -99,7 +100,11 @@ else
 fi
 
 echo "Dump magic data to the backend file"
-echo -n "0: ffff ffff ffff ffff" | xxd -r - "${backend_dev}"
+dumper="$(realpath "${curr_path}/dump")"
+gcc "${dumper}.c" -o "${dumper}" || exit 1
+${dumper} -f "${backend_dev}" -d 0xcccccccccccccccc || exit 1
+# echo -n "0: ffff ffff ffff ffff" | xxd -r - "${backend_dev}" || exit 1
+# echo -n "0: ffff ffff ffff ffff" | xxd -r | dd of=${backend_dev} conv=fdatasync oflag=direct || exit 1
 
 # Run QEMU in TMUX
 echo "Starting the QEMU"

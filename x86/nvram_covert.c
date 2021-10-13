@@ -1,4 +1,5 @@
 #include "libcflat.h"
+#include "processor.h"
 
 static phys_addr_t nvram_start = 0x100000000;
 
@@ -9,7 +10,7 @@ static bool test_read_nvram(void)
 	data = addr[0];
 	printf("Read data [0x%016lx] from addr [0x%016lx]\n", data, (u64)(&addr[0]));
 
-	if (data == 0xffffffffffffffff)
+	if (data == 0xcccccccccccccccc)
 		return true;
 	else
 		return false;
@@ -34,5 +35,7 @@ int main(int argc, char **argv)
 	report(true, "NVRAM covert channel boot up.");
 	report(test_read_nvram(), "Reading data from NVRAM");
 	report(test_write_nvram(), "Writing data to NVRAM");
+	report(this_cpu_has(X86_FEATURE_RDRAND), "CPU has rdrand feature");
+	report(this_cpu_has(X86_FEATURE_RDTSCP), "CPU has rdtscp feature");
 	return report_summary();
 }
