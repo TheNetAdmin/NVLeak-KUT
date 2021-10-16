@@ -131,6 +131,7 @@ static bool init_covert_info(int argc, char **argv)
 
 static void covert_channel(void)
 {
+	init_chasing_index(ci.cindex, ci.region_size / ci.block_size);
 	covert_ptr_chasing_load_only(&ci);
 }
 
