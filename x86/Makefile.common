@@ -44,6 +44,7 @@ FLATLIBS = lib/libcflat.a
 %.elf: %.o $(FLATLIBS) $(SRCDIR)/x86/flat.lds $(cstart.o)
 	$(CC) $(CFLAGS) -nostdlib -o $@ -Wl,-T,$(SRCDIR)/x86/flat.lds \
 		$(filter %.o, $^) $(FLATLIBS)
+	objdump -r -d -t $@ >$@.S
 	@chmod a-x $@
 
 %.flat: %.elf

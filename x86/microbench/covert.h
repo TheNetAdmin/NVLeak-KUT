@@ -29,7 +29,7 @@ typedef struct {
 #ifndef kr_info
 #define kr_info(string, args...)                                               \
 	do {                                                                   \
-		printf(string, ##args);                                        \
+		printf(string "\n", ##args);                                        \
 	} while (0)
 #endif
 

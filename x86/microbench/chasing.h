@@ -23,7 +23,7 @@
 #ifndef kr_info
 #define kr_info(string, args...)                                               \
 	do {                                                                   \
-		printf(string, ##args);                                        \
+		printf(string "\n", ##args);                                        \
 	} while (0)
 #endif
 
@@ -348,7 +348,7 @@
 	CHASING_ST_2048(cl_base + 32)
 
 #define CHASING_ST_CURR_DATA_AVX                                               \
-	"vmovq  (%[cindex], %%r12, 8), %%xmm0\n"
+	"movq  (%[cindex], %%r12, 8), %%xmm0\n"
 
 #define CHASING_ST_CURR_DATA_REG                                               \
 	"movq   (%[cindex], %%r12, 8), %%r13\n"

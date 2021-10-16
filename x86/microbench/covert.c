@@ -20,15 +20,15 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 	 *       - sender fill one set with 16 buffer blocks
 	 *       - receiver fill same set with 16 other blocks
 	 */
-	kr_info("covert_strategy=ptr_chasing_load_only");
+	kr_info("covert_strategy=ptr_chasing_load_only\n");
 
-	kr_info("Init bit 0 channel: %p", bit_0_channel);
+	kr_info("Init bit 0 channel: %p\n", bit_0_channel);
 	chasing_func_list[ci->chasing_func_index].st_func(
 		bit_0_channel, ci->region_size, ci->strided_size,
 		ci->region_skip, ci->count, ci->repeat, ci->cindex, ci->timing);
 	asm volatile("mfence \n" :::);
 
-	kr_info("Init bit 1 channel: %p", bit_1_channel);
+	kr_info("Init bit 1 channel: %p\n", bit_1_channel);
 	chasing_func_list[ci->chasing_func_index].st_func(
 		bit_1_channel, ci->region_size, ci->strided_size,
 		ci->region_skip, ci->count, ci->repeat, ci->cindex, ci->timing);

@@ -131,6 +131,33 @@ static bool init_covert_info(int argc, char **argv)
 
 static void covert_channel(void)
 {
+	covert_ptr_chasing_load_only(&ci);
+}
+
+static bool check_and_set_up_sse(void)
+{
+	/* https://wiki.osdev.org/SSE */
+	if (!this_cpu_has(X86_FEATURE_XMM) || !this_cpu_has(X86_FEATURE_XMM2)) {
+		return false;
+	}
+
+	/* Clear CR0.EM, set CR0.MP */
+	ulong cr0 = read_cr0();
+	printf("cr0 = 0x%016lx\n", cr0);
+	cr0 &= ~(X86_CR0_EM);
+	cr0 |= X86_CR0_MP;
+	printf("cr0 = 0x%016lx\n", cr0);
+	write_cr0(cr0);
+
+	/* Set CR4.OSFXSR and CR4.OSXMMEXCPT */
+	ulong cr4 = read_cr4();
+	printf("cr4 = 0x%016lx\n", cr4);
+	cr4 |= (1 << 9);
+	cr4 |= (1 << 10);
+	printf("cr4 = 0x%016lx\n", cr4);
+	write_cr4(cr4);
+
+	return true;
 }
 
 int main(int argc, char **argv)
@@ -146,6 +173,9 @@ int main(int argc, char **argv)
 	report(this_cpu_has(X86_FEATURE_RDTSCP), "CPU has rdtscp feature");
 	report(test_print_chasing_help(),
 	       "Print chasing microbenchmark help message");
+	report(check_and_set_up_sse(), "Set up SSE extension");
+
+	covert_channel();
 
 	return report_summary();
 }

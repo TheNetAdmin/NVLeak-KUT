@@ -79,7 +79,7 @@ nvram_align_size="1G"
 
 # QEMU args
 qemu_comm_args=""
-qemu_comm_args+=" -cpu max"
+qemu_comm_args+=" -cpu max,+sse2,+ssse3,+sse4.1,+sse4.2,+avx,+avx2"
 qemu_comm_args+=" -machine pc,nvdimm,accel=kvm"
 qemu_comm_args+=" -m ${ram_size},slots=${ram_slots},maxmem=${ram_max_size}"
 qemu_comm_args+=" -object memory-backend-file,id=mem1,share=on,mem-path=${backend_dev},size=${nvram_size},align=${nvram_align_size}"
