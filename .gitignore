@@ -26,3 +26,4 @@ cscope.*
 /s390x/*.bin
 /s390x/snippets/*/*.gbin
 /scripts/nvsec/dump
+results/*
