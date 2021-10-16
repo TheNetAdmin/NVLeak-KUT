@@ -15,7 +15,8 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 	char *	  bit_1_channel = ci->buf + 4096;
 	uint64_t *timing	= ci->timing;
 
-	/* NOTE: assume L2 16 way
+	/* 
+	 * NOTE: assume L2 16 way
 	 *       - sender fill one set with 16 buffer blocks
 	 *       - receiver fill same set with 16 other blocks
 	 */
@@ -75,7 +76,8 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 		}
 		break;
 	case 1: // receiver
-		/* NOTE: for now, receiver only monitors the first set, because
+		/*
+		 * NOTE: for now, receiver only monitors the first set, because
 		 *       implementation is simpler, later may need to monitor
 		 *       multiple sets
 		 */
