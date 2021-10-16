@@ -16,8 +16,7 @@ static void usage(void)
 static void read_data_pmem(uint64_t *ptr, int count)
 {
 	printf("Reading data:\n");
-	for (int i = 0; i < count; i++)
-	{
+	for (int i = 0; i < count; i++) {
 		printf("    [%04u]: 0x%016lx\n", i, ptr[i]);
 	}
 }
@@ -33,24 +32,20 @@ int main(int argc, char *argv[])
 {
 	int opt;
 
-	char *file_path;
+	char *	 file_path;
 	uint64_t write_data = 0;
-	enum
-	{
-		READ,
-		WRITE,
+	enum { READ,
+	       WRITE,
 	} operation = READ;
 
-	while ((opt = getopt(argc, argv, "f:d:")) != -1)
-	{
-		switch (opt)
-		{
+	while ((opt = getopt(argc, argv, "f:d:")) != -1) {
+		switch (opt) {
 		case 'f':
 			file_path = optarg;
 			break;
 		case 'd':
 			write_data = strtoull(optarg, NULL, 0);
-			operation = WRITE;
+			operation  = WRITE;
 			break;
 		default:
 			usage();
@@ -59,8 +54,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (file_path == NULL)
-	{
+	if (file_path == NULL) {
 		usage();
 		exit(1);
 	}
@@ -72,38 +66,33 @@ int main(int argc, char *argv[])
 
 	printf("Opening file %s\n", file_path);
 	int fd = open(file_path, O_RDWR);
-	if (fd < 0)
-	{
+	if (fd < 0) {
 		printf("Could not open file: %s\n", file_path);
 		exit(2);
 	}
 
 	struct stat statbuf;
-	int err = fstat(fd, &statbuf);
-	if (err < 0)
-	{
+	int	    err = fstat(fd, &statbuf);
+	if (err < 0) {
 		printf("Could not stat file: %s\n", file_path);
 		exit(2);
 	}
 
 	size_t file_size = statbuf.st_size;
-	if (file_size == 0)
-	{
+	if (file_size == 0) {
 		printf("Warning: statbuf.st_size==0, force using file_size=1GiB\n");
 		file_size = 1 * 1024 * 1024 * 1024;
 	}
 
 	uint64_t *ptr = MAP_FAILED;
-	if (operation == READ)
-	{
-		ptr = (uint64_t *)mmap(NULL, file_size, PROT_READ, MAP_SHARED, fd, 0);
+	if (operation == READ) {
+		ptr = (uint64_t *)mmap(NULL, file_size, PROT_READ, MAP_SHARED,
+				       fd, 0);
+	} else {
+		ptr = (uint64_t *)mmap(NULL, file_size, PROT_READ | PROT_WRITE,
+				       MAP_SHARED, fd, 0);
 	}
-	else
-	{
-		ptr = (uint64_t *)mmap(NULL, file_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-	}
-	if (ptr == MAP_FAILED)
-	{
+	if (ptr == MAP_FAILED) {
 		printf("Mapping failed\n");
 		exit(2);
 	}
@@ -111,16 +100,14 @@ int main(int argc, char *argv[])
 
 	read_data_pmem(ptr, 4);
 
-	if (operation == WRITE)
-	{
+	if (operation == WRITE) {
 		printf("Writing data [0x%016lx] to [%p]\n", write_data, ptr);
 		write_data_pmem(&(ptr[0]), write_data);
 		read_data_pmem(ptr, 4);
 	}
 
 	err = munmap(ptr, file_size);
-	if (err != 0)
-	{
+	if (err != 0) {
 		printf("UnMapping Failed\n");
 		exit(2);
 	}
