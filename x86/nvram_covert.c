@@ -156,16 +156,21 @@ static bool check_and_set_up_sse(void)
 	cr4 |= (1 << 10);
 	printf("cr4 = 0x%016lx\n", cr4);
 	write_cr4(cr4);
+	
+	/* Test SSE instruction, it will #UD if SSE is not properly set up */
+	asm volatile ("movq (0x0), %xmm0");
 
 	return true;
 }
 
 int main(int argc, char **argv)
 {
+	/* Parse args */
 	if (!init_covert_info(argc, argv)) {
 		return 1;
 	}
 
+	/* Check and setup */
 	report(true, "NVRAM covert channel boot up.");
 	report(test_read_nvram(), "Reading data from NVRAM");
 	/* report(test_write_nvram(), "Writing data to NVRAM"); */
@@ -175,6 +180,7 @@ int main(int argc, char **argv)
 	       "Print chasing microbenchmark help message");
 	report(check_and_set_up_sse(), "Set up SSE extension");
 
+	/* Run covert channel */
 	covert_channel();
 
 	return report_summary();
