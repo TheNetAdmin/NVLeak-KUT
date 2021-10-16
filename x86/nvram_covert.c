@@ -40,7 +40,7 @@ static bool test_print_chasing_help(void)
 {
 	int len = sizeof(chasing_func_list) / sizeof(chasing_func_entry_t);
 
-	printf("TOtal available pointer chasing benchmarks: %d\n", len);
+	printf("Total available pointer chasing benchmarks: %d\n", len);
 
 	chasing_print_help();
 	return true;
@@ -67,7 +67,13 @@ enum { max_send_data_bytes = 8 * 1024 * 1024,
 
 static bool init_covert_info(int argc, char **argv)
 {
-	if (argc < 7 + 1) {
+	/* TODO: Change to use getenv instead of args */
+
+	static const unsigned total_args = 7;
+
+	if (argc < total_args + 1) {
+		printf("Wrong usage: expected %u args, but got %d\n",
+		       total_args, argc - 1);
 		print_usage();
 		return false;
 	}

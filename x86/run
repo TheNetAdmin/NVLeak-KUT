@@ -41,4 +41,8 @@ command="${qemu} --no-reboot -nodefaults $pc_testdev -vnc none -serial stdio $pc
 command+=" -machine accel=$ACCEL -kernel"
 command="$(timeout_cmd) $command"
 
+if [[ -n "${append_args}" ]]; then
+run_qemu ${command} "$@" -append "${append_args}"
+else
 run_qemu ${command} "$@"
+fi
