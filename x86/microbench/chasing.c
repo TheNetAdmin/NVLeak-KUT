@@ -18,31 +18,6 @@
 #include "chasing.h"
 #include "libcflat.h"
 
-#define CHASING_ENTRY(size)                                                    \
-{                                                                              \
-	.name             = "pointer-chasing-" #size,                          \
-	.fence_strategy   = CHASING_FENCE_STRATEGY,                            \
-	.fence_freq       = CHASING_FENCE_FREQ,                                \
-	.flush_after_load = CHASING_FLUSH_AFTER_LOAD_TYPE,                     \
-	.flush_l1         = CHASING_FLUSH_L1_TYPE,                             \
-	.record_timing    = CHASING_RECORD_TIMING_TYPE,                        \
-	.block_size       = size,                                              \
-	.ld_func          = chasing_ldnt_##size,                               \
-	.st_func          = chasing_stnt_##size,                               \
-	.raw_func         = chasing_read_after_write_##size,                   \
-},
-
-static chasing_func_entry_t chasing_func_list[] = {
-	CHASING_ENTRY(64)   // 0
-	CHASING_ENTRY(128)  // 1
-	CHASING_ENTRY(256)  // 2
-	CHASING_ENTRY(512)  // 3
-	CHASING_ENTRY(1024) // 4
-	CHASING_ENTRY(2048) // 5
-	CHASING_ENTRY(4096) // 6
-	// CHASING_ENTRY(8)    // 7
-};
-
 void chasing_print_help(void)
 {
 	int len = sizeof(chasing_func_list) / sizeof(chasing_func_entry_t);

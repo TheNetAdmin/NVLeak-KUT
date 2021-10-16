@@ -106,6 +106,12 @@ ${dumper} -f "${backend_dev}" -d 0xcccccccccccccccc || exit 1
 # echo -n "0: ffff ffff ffff ffff" | xxd -r - "${backend_dev}" || exit 1
 # echo -n "0: ffff ffff ffff ffff" | xxd -r | dd of=${backend_dev} conv=fdatasync oflag=direct || exit 1
 
+# Prepare host CPU into performance mode
+echo "Set host CPU into performance mode"
+for line in $(find /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor); do
+	echo "performance" >"$line"
+done
+
 # Run QEMU in TMUX
 echo "Starting the QEMU"
 tmux_session_name="cross-vm-covert-${label}"

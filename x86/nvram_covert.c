@@ -33,6 +33,10 @@ static bool test_write_nvram(void)
 
 static bool test_print_chasing_help(void)
 {
+	int len = sizeof(chasing_func_list) / sizeof(chasing_func_entry_t);
+	
+	printf("TOtal available pointer chasing benchmarks: %d\n", len);
+
 	chasing_print_help();
 	return true;
 }
