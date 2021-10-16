@@ -2,8 +2,16 @@
 curr_path="$(realpath "$(dirname "${0}")")"
 use_tmux="${use_tmux:-1}"
 
+covert_data_file_id=${covert_data_file_id:-1}
+
 usage() {
 	echo "Usage: $0 [sender|receiver] [other args for nvsec_covert]"
+}
+
+print_envs() {
+	echo "Envs:"
+	echo "    - covert_data_file_id: ${covert_data_file_id}"
+	echo "    - use_tmux: ${use_tmux}"
 }
 
 # Arguments
@@ -27,6 +35,9 @@ case "${label}" in
 		exit 1
 	;;
 esac
+
+# Print envs
+print_envs
 
 # Build kernel
 kernel_file="nvram_covert.flat"
@@ -99,15 +110,33 @@ else
 	qemu_command+=" ${qemu_comm_args}"
 fi
 
-# Arguments
-export append_args="$*"
-
-echo "Dump magic data to the backend file"
+echo "Dump covert data to the backend file"
 dumper="$(realpath "${curr_path}/dump")"
 gcc "${dumper}.c" -o "${dumper}" || exit 1
-${dumper} -f "${backend_dev}" -d 0xcccccccccccccccc || exit 1
+
+echo "Covert data file id: ${covert_data_file_id}"
+covert_data_path="$(realpath "$(dirname "${0}")"/covert_data)"
+covert_data_file_pattern="${covert_data_path}/${covert_data_file_id}.*.*.bin"
+if ls ${covert_data_file_pattern} 1>/dev/null 2>&1; then
+	covert_data_file="$(readlink -f ${covert_data_file_pattern})"
+	file_size_byte="$(stat --format=%s "${covert_data_file}")"
+	${dumper} -o "${backend_dev}" -i "${covert_data_file}" -s "${file_size_byte}"
+	# dd if="${covert_data_file}" of=${rep_dev} bs=${file_size_byte} count=1 conv=fsync
+	covert_data_bits=$((file_size_byte * 8))
+else
+	echo "Cannot find covert data file with ID: ${covert_data_file_id}"
+	exit 2
+fi
+
+# ${dumper} -f "${backend_dev}" -d 0xcccccccccccccccc || exit 1
 # echo -n "0: ffff ffff ffff ffff" | xxd -r - "${backend_dev}" || exit 1
 # echo -n "0: ffff ffff ffff ffff" | xxd -r | dd of=${backend_dev} conv=fdatasync oflag=direct || exit 1
+
+# Arguments
+all_args=("$@")
+all_args[1]="${covert_data_bits}"
+export append_args="${all_args[*]}"
+echo "append_args: ${append_args}"
 
 # Prepare host CPU into performance mode
 echo "Set host CPU into performance mode"

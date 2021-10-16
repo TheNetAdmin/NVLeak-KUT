@@ -61,6 +61,10 @@ static void write_file_pmem(uint64_t *ptr, char *file_path, size_t file_size)
 
 	for (size_t i = 0; i < file_size; i++) {
 		out_ptr[i] = in_ptr[i];
+		if (i % 64 == 63 || i == file_size - 1) {
+			_mm_clflush((void *)out_ptr);
+			_mm_mfence();
+		}
 	}
 
 	err = munmap(in_ptr, file_size);
