@@ -36,3 +36,6 @@ $(TEST_DIR)/hyperv_clock.elf: $(TEST_DIR)/hyperv_clock.o
 
 $(TEST_DIR)/vmx.elf: $(TEST_DIR)/vmx_tests.o
 $(TEST_DIR)/svm.elf: $(TEST_DIR)/svm_tests.o
+
+$(TEST_DIR)/nvram_covert.elf: $(TEST_DIR)/microbench/chasing.o
+$(TEST_DIR)/nvram_covert.elf: CFLAGS += -Wno-unused-function

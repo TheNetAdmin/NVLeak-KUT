@@ -23,7 +23,7 @@
 #ifndef kr_info
 #define kr_info(string, args...)                                               \
 	do {                                                                   \
-		printf("{%d}" string, ctx->core_id, ##args);                   \
+		printf(string, ##args);                                        \
 	} while (0)
 #endif
 
@@ -125,7 +125,8 @@
  *   ---> %r9+16MiB-16KiB -> %r10 flush start address
  */
 #define FLUSH_L1_ONE_BLOCK(block_index)                                        \
-	"vmovntdqa	(256 *  (	" #block_index "))(%%r9, %%r12), %%zmm" #block_index "	\n"
+	"movntdqa	(256 *  (	" #block_index "))(%%r9, %%r12), %%xmm0 \n"     \
+	"clflush	(256 *  (	" #block_index "))(%%r9, %%r12) \n"
 
 /* TODO: Use vgather instructions to reduce the zmm registers used? */
 #define FLUSH_L1(PCBLOCK_SIZE, LABEL)                                          \
@@ -310,7 +311,8 @@
  * `../scripts/code/expand_macro.sh chasing.h` to view macro expansion results.
  */
 #define CHASING_ST_64_AVX(cl_index)                                            \
-	"vmovntdq	%%zmm0, (64 * (" #cl_index "))(%%r9, %%r12)\n"
+	"movntdq	%%xmm0, (64 * (" #cl_index "))(%%r9, %%r12)\n"
+	/* "clflush	(64 * (" #cl_index "))(%%r9, %%r12)\n" */
 
 #define CHASING_ST_8_REG(cl_index)                                             \
 	"movnt          %%r13, (64 * (" #cl_index "))(%%r9, %%r12)\n"
@@ -417,7 +419,7 @@ static void chasing_stnt_##PCBLOCK_SIZE(char *start_addr,                      \
 		CHASING_ST_FENCE_REGION                                        \
 								               \
 		"inc	%%r13 \n"				               \
-		CHASING_PER_REPEAT_TIMING_END(%[timing])                \
+		CHASING_PER_REPEAT_TIMING_END(%[timing])                       \
 								               \
 		"cmp	%[repeat], %%r13 \n"			               \
 		"jl     LOOP_CHASING_ST_NT_" #PCBLOCK_SIZE "_REPEAT \n"        \
@@ -436,13 +438,13 @@ static void chasing_stnt_##PCBLOCK_SIZE(char *start_addr,                      \
 		  [cindex]      "r"(cindex),                                   \
 		  [timing]      "r"(timing),                                   \
 		  [repeat]      "r"(repeat)                                    \
-		: "%zmm0", "%r13", "%r12", "%r11", "%r10", "%r9", "%r8"        \
+		: "%r13", "%r12", "%r11", "%r10", "%r9", "%r8"        \
 	);                                                                     \
 	KERNEL_END                                                             \
 };
 
 #define CHASING_LD_64_AVX(cl_index)                                            \
-	"vmovntdqa	(64 * (" #cl_index "))(%%r9, %%r12), %%zmm0\n"	       \
+	"movntdqa	(64 * (" #cl_index "))(%%r9, %%r12), %%xmm0\n"	       \
 	CHASING_LOAD_FLUSH(cl_index)
 
 #define CHASING_LD_8_REG(cl_index)                                             \
@@ -554,7 +556,7 @@ static void chasing_ldnt_##PCBLOCK_SIZE(char *start_addr,                      \
 		  [region_skip] "r"(region_skip),                              \
 		  [timing]      "r"(timing),                                   \
 		  [repeat]      "r"(repeat)                                    \
-		: "%zmm0", "%r13", "%r12", "%r11", "%r10", "%r9", "%r8"        \
+		: "%r13", "%r12", "%r11", "%r10", "%r9", "%r8"        \
 	);                                                                     \
 	KERNEL_END                                                             \
 }
@@ -634,7 +636,7 @@ static void chasing_read_after_write_##PCBLOCK_SIZE(char *start_addr,          \
 		  [cindex]      "r"(cindex),                                   \
 		  [timing]      "r"(timing),                                   \
 		  [repeat]      "r"(repeat)                                    \
-		: "%zmm0", "%r13", "%r12", "%r11", "%r10", "%r9", "%r8"        \
+		: "%r13", "%r12", "%r11", "%r10", "%r9", "%r8"        \
 	);                                                                     \
 	KERNEL_END                                                             \
 }
@@ -679,42 +681,17 @@ typedef void (*chasing_func_t)(char *start_addr,
 			       uint64_t *timing);
 
 typedef struct chasing_func_entry {
-	char *name;
-	char *fence_strategy;
-	char *fence_freq;
-	char *flush_after_load;
-	char *flush_l1;
-	char *record_timing;
+	const char *name;
+	const char *fence_strategy;
+	const char *fence_freq;
+	const char *flush_after_load;
+	const char *flush_l1;
+	const char *record_timing;
 	uint64_t block_size;
 	chasing_func_t ld_func;
 	chasing_func_t st_func;
 	chasing_func_t raw_func;
 } chasing_func_entry_t;
-
-#define CHASING_ENTRY(size)                                                    \
-{                                                                              \
-	.name             = "pointer-chasing-" #size,                          \
-	.fence_strategy   = CHASING_FENCE_STRATEGY,                            \
-	.fence_freq       = CHASING_FENCE_FREQ,                                \
-	.flush_after_load = CHASING_FLUSH_AFTER_LOAD_TYPE,                     \
-	.flush_l1         = CHASING_FLUSH_L1_TYPE,                             \
-	.record_timing    = CHASING_RECORD_TIMING_TYPE,                        \
-	.block_size       = size,                                              \
-	.ld_func          = chasing_ldnt_##size,                               \
-	.st_func          = chasing_stnt_##size,                               \
-	.raw_func         = chasing_read_after_write_##size,                   \
-},
-
-static chasing_func_entry_t chasing_func_list[] = {
-	CHASING_ENTRY(64)   // 0
-	CHASING_ENTRY(128)  // 1
-	CHASING_ENTRY(256)  // 2
-	CHASING_ENTRY(512)  // 3
-	CHASING_ENTRY(1024) // 4
-	CHASING_ENTRY(2048) // 5
-	CHASING_ENTRY(4096) // 6
-	// CHASING_ENTRY(8)    // 7
-};
 
 void chasing_print_help(void);
 int chasing_find_func(uint64_t block_size);

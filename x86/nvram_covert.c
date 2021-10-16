@@ -1,5 +1,6 @@
 #include "libcflat.h"
 #include "processor.h"
+#include "microbench/chasing.h"
 
 static phys_addr_t nvram_start = 0x100000000;
 
@@ -30,6 +31,12 @@ static bool test_write_nvram(void)
 	return true;
 }
 
+static bool test_print_chasing_help(void)
+{
+	chasing_print_help();
+	return true;
+}
+
 int main(int argc, char **argv)
 {
 	report(true, "NVRAM covert channel boot up.");
@@ -37,5 +44,6 @@ int main(int argc, char **argv)
 	report(test_write_nvram(), "Writing data to NVRAM");
 	report(this_cpu_has(X86_FEATURE_RDRAND), "CPU has rdrand feature");
 	report(this_cpu_has(X86_FEATURE_RDTSCP), "CPU has rdtscp feature");
+	report(test_print_chasing_help(), "Print chasing microbenchmark help message");
 	return report_summary();
 }
