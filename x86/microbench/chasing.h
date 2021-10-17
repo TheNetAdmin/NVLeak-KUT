@@ -23,7 +23,7 @@
 #ifndef kr_info
 #define kr_info(string, args...)                                               \
 	do {                                                                   \
-		printf(string "\n", ##args);                                        \
+		printf(string "\n", ##args);                                   \
 	} while (0)
 #endif
 
@@ -86,7 +86,7 @@
 #endif
 
 #ifndef CHASING_FLUSH_AFTER_LOAD
-#define CHASING_FLUSH_AFTER_LOAD 0
+#define CHASING_FLUSH_AFTER_LOAD 1
 #endif
 
 

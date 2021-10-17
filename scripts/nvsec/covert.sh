@@ -1,11 +1,13 @@
 #!/bin/bash
 
+set -e
+
 batch_id="$(date +%Y%m%d%H%M%S)"
 batch_result_dir="results/${batch_id}"
 
 mkdir -p "${batch_result_dir}"
 
-script_root=$(realpath $(realpath $(dirname $0))/)
+script_root=$(realpath $(realpath $(dirname $0)))
 source "$script_root/utils/slack.sh"
 export SlackURL=https://hooks.slack.com/services/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
 
@@ -60,19 +62,35 @@ region_align=4096
 
 fence_strategy_array=(0)
 fence_freq_array=(1)
-flush_after_load_array=(0)
+flush_after_load_array=(0 1)
 record_timing_array=(1) # 1: per_reapeat
 flush_l1_array=(0 1)
-
+receiver_page_offset_array=($(seq -s ' ' 0 15))
 
 function run_qemu() {
 	# $1 sender | receiver
 	# $@ other args
+	core_id=1
+	case $1 in
+		sender)
+			core_id="4-7"
+		;;
+		receiver)
+			core_id="8-11"
+		;;
+		*)
+		echo "Wrong usage"
+		echo "Usage: run_qemu sender|receiver [... args]"
+		;;
+	esac
+
 	use_tmux=0 set_cpu_perf_mode=0 dump_covert_data=0 \
-	"$script_root/qemu_nvram.sh" "$@"
+	nice -n -19 \
+	numactl --physcpubind "${core_id}" \
+		"$script_root/qemu_nvram.sh" "$@"
 }
 
-function bench_func() {
+function bench_func_inner() {
 	prepare
 
 	for repeat in "${repeat_array[@]}"; do
@@ -132,6 +150,7 @@ function bench_func() {
 
 									slack_notice $SlackURL "$SLACK_MSG"
 									iter=0
+									for receiver_page_offset in "${receiver_page_offset_array[@]}"; do
 									for region_size in "${region_array[@]}"; do
 										for stride_size in "${stride_array[@]}"; do
 											if ((region_size % block_size != 0)); then
@@ -145,18 +164,6 @@ function bench_func() {
 											task_results_dir="${batch_result_dir}/${task_id}"
 											mkdir -p "${task_results_dir}"
 											{
-												# sender
-												run_qemu \
-													"sender" \
-													"$covert_data_bits" \
-													"$region_size" \
-													"$block_size" \
-													"$stride_size" \
-													"$repeat" \
-													"$region_align" \
-													> "${task_results_dir}/sender.log" \
-												&
-
 												# receiver
 												run_qemu \
 													"receiver" \
@@ -166,15 +173,30 @@ function bench_func() {
 													"$stride_size" \
 													"$repeat" \
 													"$region_align" \
+													"$receiver_page_offset" \
 													> "${task_results_dir}/receiver.log" \
+												&
+
+												# sender
+												run_qemu \
+													"sender" \
+													"$covert_data_bits" \
+													"$region_size" \
+													"$block_size" \
+													"$stride_size" \
+													"$repeat" \
+													"$region_align" \
+													"$receiver_page_offset" \
+													> "${task_results_dir}/sender.log" \
 												&
 
 												wait
 											}
 										done
 										iter=$((iter + 1))
-										progress=$(bc -l <<<"scale=2; 100 * $iter / ${#region_array[@]}")
-										slack_notice $SlackURL "[Progress] $progress% [$iter / ${#region_array[@]}]"
+										progress=$(bc -l <<<"scale=2; 100 * $iter / ${#region_array[@]} / ${#receiver_page_offset_array[@]}")
+										slack_notice $SlackURL "[Progress] $progress% [$iter / ${#region_array[@]} / ${#receiver_page_offset_array[@]}]"
+									done
 									done
 									slack_notice $SlackURL "[End     ] $(basename "$0")"
 								done
@@ -191,14 +213,23 @@ function bench_func() {
 	slack_notice $SlackURL "[Finish  ] <@U01QVMG14HH> check results"
 }
 
+function bench_func() {
+	bench_func_inner \
+		 > >(ts '[%Y-%m-%d %H:%M:%S]' | tee -a "$batch_result_dir/stdout.log")    \
+ 		2> >(ts '[%Y-%m-%d %H:%M:%S]' | tee -a "$batch_result_dir/stderr.log" >&2)
+}
+
 job=$1
 case $job in
 debug)
-	region_array=(256)
-	stride_array=(256)
+	region_array=($((2 ** 12)))
+	stride_array=($((2 ** 21)))
 	flush_l1_array=(1)
-	repeat_array=(1)
-	covert_fid_array=(1)
+	repeat_array=(16)
+	covert_fid_array=(6)
+	flush_after_load_array=(1)
+	receiver_page_offset_array=($(seq -s ' ' 0 15))
+	export no_slack=1
 	bench_func
 	;;
 all)

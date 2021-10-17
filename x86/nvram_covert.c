@@ -57,7 +57,9 @@ static void print_usage(void)
 	printf("      stride_size\n");
 	printf("      repeat\n");
 	printf("      region_align\n");
+	printf("      receiver_channel_page_offset\n");
 }
+static const unsigned total_args = 8;
 
 enum { max_send_data_bytes = 8 * 1024 * 1024,
        buf_offset	   = 32 * 1024 * 1024,
@@ -68,8 +70,6 @@ enum { max_send_data_bytes = 8 * 1024 * 1024,
 static bool init_covert_info(int argc, char **argv)
 {
 	/* TODO: Change to use getenv instead of args */
-
-	static const unsigned total_args = 7;
 
 	if (argc < total_args + 1) {
 		printf("Wrong usage: expected %u args, but got %d\n",
@@ -95,6 +95,8 @@ static bool init_covert_info(int argc, char **argv)
 	ci.repeat	   = (uint64_t)atol(argv[6]);
 	ci.region_align	   = (uint64_t)atol(argv[7]);
 
+	uint64_t receiver_channel_page_offset = (uint64_t)atol(argv[8]);
+
 	/* Hard code */
 	ci.send_data = (uint64_t *)nvram_start;
 	ci.buf	     = (char *)(nvram_start + buf_offset);
@@ -109,6 +111,13 @@ static bool init_covert_info(int argc, char **argv)
 	/* Other arguments */
 	ci.region_skip	      = ci.region_size;
 	ci.chasing_func_index = chasing_find_func(ci.block_size);
+
+	/* Fix arguments */
+	if (ci.role_type == receiver) {
+		ci.total_data_bits *= 2;
+		ci.buf += 4096 * receiver_channel_page_offset;
+	}
+	printf("receiver_channel_page_offset=%lu\n", receiver_channel_page_offset);
 
 	/* Check arguments */
 	if (ci.total_data_bits * 8 > max_send_data_bytes) {
