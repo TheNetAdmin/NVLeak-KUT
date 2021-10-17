@@ -5,8 +5,6 @@ set -e
 batch_id="$(date +%Y%m%d%H%M%S)"
 batch_result_dir="results/${batch_id}"
 
-mkdir -p "${batch_result_dir}"
-
 script_root=$(realpath $(realpath $(dirname $0)))
 source "$script_root/utils/slack.sh"
 export SlackURL=https://hooks.slack.com/services/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
@@ -57,7 +55,7 @@ region_array=(
 	$((2 ** 13))
 )
 sub_op_array=(1) # Covert channel: Pointer chasing read only
-repeat_array=(4 8 16 32)
+repeat_array=(8 16 32)
 region_align=4096
 
 fence_strategy_array=(0)
@@ -91,6 +89,8 @@ function run_qemu() {
 }
 
 function bench_func_inner() {
+	mkdir -p "${batch_result_dir}"
+
 	prepare
 
 	for repeat in "${repeat_array[@]}"; do
@@ -230,9 +230,11 @@ debug)
 	flush_after_load_array=(1)
 	receiver_page_offset_array=($(seq -s ' ' 0 15))
 	export no_slack=1
+	batch_result_dir="${batch_result_dir}/${job}"
 	bench_func
 	;;
 all)
+	batch_result_dir="${batch_result_dir}/${job}"
 	bench_func
 	;;
 *)
