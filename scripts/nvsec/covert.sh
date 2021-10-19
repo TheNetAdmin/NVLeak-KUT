@@ -29,7 +29,6 @@ cleanup() {
 
 covert_fid_array=(
 	10
-	11
 )
 block_size=64
 stride_array=(
@@ -59,9 +58,9 @@ region_align=4096
 
 fence_strategy_array=(0)
 fence_freq_array=(1)
-flush_after_load_array=(0 1)
+flush_after_load_array=(1)
 record_timing_array=(1) # 1: per_reapeat
-flush_l1_array=(0 1)
+flush_l1_array=(1)
 receiver_page_offset_array=($(seq -s ' ' 0 255))
 
 function run_qemu() {
