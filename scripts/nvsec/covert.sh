@@ -28,7 +28,8 @@ cleanup() {
 }
 
 covert_fid_array=(
-	10
+	20
+	21
 )
 block_size=64
 stride_array=(
@@ -172,6 +173,7 @@ function bench_func_inner() {
 													"$repeat" \
 													"$region_align" \
 													"$receiver_page_offset" \
+													"$covert_data_file_id" \
 													> "${task_results_dir}/receiver.log" \
 												&
 
@@ -185,6 +187,7 @@ function bench_func_inner() {
 													"$repeat" \
 													"$region_align" \
 													"$receiver_page_offset" \
+													"$covert_data_file_id" \
 													> "${task_results_dir}/sender.log" \
 												&
 
@@ -212,21 +215,22 @@ function bench_func_inner() {
 }
 
 function bench_func() {
-	bench_func_inner \
-		 > >(ts '[%Y-%m-%d %H:%M:%S]' | tee -a "$batch_result_dir/stdout.log")    \
+	{
+		bench_func_inner
+	}    > >(ts '[%Y-%m-%d %H:%M:%S]' | tee -a "$batch_result_dir/stdout.log")    \
  		2> >(ts '[%Y-%m-%d %H:%M:%S]' | tee -a "$batch_result_dir/stderr.log" >&2)
 }
 
 job=$1
 case $job in
 debug)
-	region_array=($((2 ** 12)))
+	region_array=($((2 ** 11)))
 	stride_array=($((2 ** 21)))
 	flush_l1_array=(1)
 	repeat_array=(16)
-	covert_fid_array=(6)
 	flush_after_load_array=(1)
-	receiver_page_offset_array=($(seq -s ' ' 0 15))
+	receiver_page_offset_array=(0)
+	covert_fid_array=(20 21)
 	export no_slack=1
 	batch_result_dir="results/${job}/${batch_id}"
 	bench_func

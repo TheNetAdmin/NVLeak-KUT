@@ -3,7 +3,7 @@
 set -e
 
 curr_path="$(realpath "$(dirname "$0")")"
-generator_script="$(realpath "${curr_path}/../../utils/gen_covert_data_pattern.py")"
+generator_script="$(realpath "${curr_path}/../utils/gen_covert_data_pattern.py")"
 
 gen_data_file() {
 	# $1 file id
@@ -60,5 +60,7 @@ gen_data_file "${fid}" 0 2048; ((fid+=1));
 gen_data_file "${fid}" 1 2048; ((fid+=1));
 gen_data_file "${fid}" 2 2048; ((fid+=1));
 gen_data_file "${fid}" 3 2048; ((fid+=1));
+gen_data_file "${fid}" 4  512; ((fid+=1));
+gen_data_file "${fid}" 5  512; ((fid+=1));
 
 popd

@@ -108,7 +108,8 @@
 		"strided_size=%lu, "                                           \
 		"region_align=%lu, "                                           \
 		"cindex=%p, "                                                  \
-		"timing=%p, ",                                                 \
+		"timing=%p, "                                                  \
+		"covert_file_id=%lu, ",                                        \
 		ci->role_type,                                                 \
 		ci->total_data_bits,                                           \
 		ci->send_data,                                                 \
@@ -122,7 +123,8 @@
 		ci->strided_size,                                              \
 		ci->region_align,                                              \
 		ci->cindex,                                                    \
-		ci->timing);                                                   \
+		ci->timing,                                                    \
+		ci->covert_file_id);                                           \
 	kr_info("\n");
 
 #endif /* LENS_UTILS_H */

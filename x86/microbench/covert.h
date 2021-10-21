@@ -7,6 +7,7 @@ typedef enum { sender, receiver } covert_role_t;
 
 typedef struct {
 	covert_role_t role_type;	/* Argument  */
+	size_t	      covert_file_id;	/* Argument  */
 	size_t	      total_data_bits;	/* Argument  */
 	uint64_t *    send_data;	/* Hard code */
 	char *	      buf;		/* Hard code */
@@ -29,7 +30,7 @@ typedef struct {
 #ifndef kr_info
 #define kr_info(string, args...)                                               \
 	do {                                                                   \
-		printf(string "\n", ##args);                                        \
+		printf(string "\n", ##args);                                   \
 	} while (0)
 #endif
 

@@ -6,36 +6,6 @@
 
 static phys_addr_t nvram_start = 0x100000000;
 
-static bool test_read_nvram(void)
-{
-	u64  data = 0;
-	u64 *addr = (u64 *)nvram_start;
-	data	  = addr[0];
-	printf("Read data [0x%016lx] from addr [0x%016lx]\n", data,
-	       (u64)(&addr[0]));
-
-	if (data == 0xcccccccccccccccc)
-		return true;
-	else
-		return false;
-}
-
-/* 
-static bool test_write_nvram(void)
-{
-	u64 data = 0x1234432112344321;
-	u64 *addr = (u64 *)nvram_start;
-
-	addr[0] = data;
-	asm volatile("clflush (%0)\n"
-		     "mfence\n"
-		     :
-		     : "b"(&addr[0]));
-	printf("Write data [0x%016lx] to addr [0x%016lx]\n", data, (u64)(&addr[0]));
-	return true;
-}
-*/
-
 static bool test_print_chasing_help(void)
 {
 	int len = sizeof(chasing_func_list) / sizeof(chasing_func_entry_t);
@@ -58,6 +28,7 @@ static void print_usage(void)
 	printf("      repeat\n");
 	printf("      region_align\n");
 	printf("      receiver_channel_page_offset\n");
+	printf("      covert_file_id\n");
 }
 static const unsigned total_args = 8;
 
@@ -71,7 +42,7 @@ static bool init_covert_info(int argc, char **argv)
 {
 	/* TODO: Change to use getenv instead of args */
 
-	if (argc < total_args + 1) {
+	if (argc != total_args + 1) {
 		printf("Wrong usage: expected %u args, but got %d\n",
 		       total_args, argc - 1);
 		print_usage();
@@ -94,6 +65,7 @@ static bool init_covert_info(int argc, char **argv)
 	ci.strided_size	   = (uint64_t)atol(argv[5]);
 	ci.repeat	   = (uint64_t)atol(argv[6]);
 	ci.region_align	   = (uint64_t)atol(argv[7]);
+	ci.covert_file_id  = (size_t)atol(argv[8]);
 
 	uint64_t receiver_channel_page_offset = (uint64_t)atol(argv[8]);
 
@@ -117,7 +89,8 @@ static bool init_covert_info(int argc, char **argv)
 		ci.total_data_bits *= 2;
 		ci.buf += 4096 * receiver_channel_page_offset;
 	}
-	printf("receiver_channel_page_offset=%lu\n", receiver_channel_page_offset);
+	printf("receiver_channel_page_offset=%lu\n",
+	       receiver_channel_page_offset);
 
 	/* Check arguments */
 	if (ci.total_data_bits * 8 > max_send_data_bytes) {
@@ -138,9 +111,20 @@ static bool init_covert_info(int argc, char **argv)
 	return true;
 }
 
+static void print_covert_data(void)
+{
+	printf("Send data:\n");
+	for (int i = 0; i < ci.total_data_bits / 64; i++) {
+		printf("  [%04d]: 0x%016lx\n", i, ci.send_data[i]);
+	}
+}
+
 static void covert_channel(void)
 {
 	init_chasing_index(ci.cindex, ci.region_size / ci.block_size);
+	if (ci.role_type == sender) {
+		print_covert_data();
+	}
 	covert_ptr_chasing_load_only(&ci);
 }
 
@@ -166,9 +150,9 @@ static bool check_and_set_up_sse(void)
 	cr4 |= (1 << 10);
 	printf("cr4 = 0x%016lx\n", cr4);
 	write_cr4(cr4);
-	
+
 	/* Test SSE instruction, it will #UD if SSE is not properly set up */
-	asm volatile ("movq (0x0), %xmm0");
+	asm volatile("movq (0x0), %xmm0");
 
 	return true;
 }
@@ -182,8 +166,6 @@ int main(int argc, char **argv)
 
 	/* Check and setup */
 	report(true, "NVRAM covert channel boot up.");
-	report(test_read_nvram(), "Reading data from NVRAM");
-	/* report(test_write_nvram(), "Writing data to NVRAM"); */
 	report(this_cpu_has(X86_FEATURE_RDRAND), "CPU has rdrand feature");
 	report(this_cpu_has(X86_FEATURE_RDTSCP), "CPU has rdtscp feature");
 	report(test_print_chasing_help(),
