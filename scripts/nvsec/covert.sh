@@ -104,14 +104,14 @@ function bench_func_inner() {
 									#   - src/Makefile
 									#   - src/microbench/chasing.h
 									NVSEC_MAKE_ARGS=$(cat <<- EOF
-										-DCHASING_FENCE_STRATEGY_ID=$fence_strategy \
-										-DCHASING_FENCE_FREQ_ID=$fence_freq \
-										-DCHASING_FLUSH_AFTER_LOAD=$flush_after_load \
-										-DCHASING_RECORD_TIMING=$record_timing \
-										-DCHASING_FLUSH_L1=$flush_l1
+										-DCHASING_FENCE_STRATEGY_ID="$fence_strategy" \
+										-DCHASING_FENCE_FREQ_ID="$fence_freq" \
+										-DCHASING_FLUSH_AFTER_LOAD="$flush_after_load" \
+										-DCHASING_RECORD_TIMING="$record_timing" \
+										-DCHASING_FLUSH_L1="$flush_l1"
 									EOF
 									)
-									NVSEC_MAKE_ARGS=$(echo "$NVSEC_MAKE_ARGS" | tr -s '\t')
+									NVSEC_MAKE_ARGS="$(echo "$NVSEC_MAKE_ARGS" | tr -s '\t')"
 									export NVSEC_MAKE_ARGS
 
 									remake_nvsec
@@ -173,7 +173,7 @@ function bench_func_inner() {
 													"$repeat" \
 													"$region_align" \
 													"$receiver_page_offset" \
-													"$covert_data_file_id" \
+													"$covert_fid" \
 													> "${task_results_dir}/receiver.log" \
 												&
 
@@ -187,7 +187,7 @@ function bench_func_inner() {
 													"$repeat" \
 													"$region_align" \
 													"$receiver_page_offset" \
-													"$covert_data_file_id" \
+													"$covert_fid" \
 													> "${task_results_dir}/sender.log" \
 												&
 
@@ -215,6 +215,7 @@ function bench_func_inner() {
 }
 
 function bench_func() {
+	mkdir -p "${batch_result_dir}"
 	{
 		bench_func_inner
 	}    > >(ts '[%Y-%m-%d %H:%M:%S]' | tee -a "$batch_result_dir/stdout.log")    \

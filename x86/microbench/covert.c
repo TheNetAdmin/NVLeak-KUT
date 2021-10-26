@@ -22,6 +22,14 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 	 */
 	kr_info("covert_strategy=ptr_chasing_load_only\n");
 
+
+	/* Print macros */
+	printf("CHASING_FENCE_STRATEGY_ID=%d\n", CHASING_FENCE_STRATEGY_ID);
+	printf("CHASING_FENCE_FREQ_ID=%d\n", CHASING_FENCE_FREQ_ID);
+	printf("CHASING_FLUSH_AFTER_LOAD=%d\n", CHASING_FLUSH_AFTER_LOAD);
+	printf("CHASING_FLUSH_L1=%d\n", CHASING_FLUSH_L1);
+	printf("CHASING_FLUSH_L1_TYPE=%s\n", CHASING_FLUSH_L1_TYPE);
+
 	kr_info("Init bit 0 channel: %p\n", bit_0_channel);
 	chasing_func_list[ci->chasing_func_index].st_func(
 		bit_0_channel, ci->region_size, ci->strided_size,

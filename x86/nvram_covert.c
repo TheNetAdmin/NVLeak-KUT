@@ -30,7 +30,7 @@ static void print_usage(void)
 	printf("      receiver_channel_page_offset\n");
 	printf("      covert_file_id\n");
 }
-static const unsigned total_args = 8;
+static const unsigned total_args = 9;
 
 enum { max_send_data_bytes = 8 * 1024 * 1024,
        buf_offset	   = 32 * 1024 * 1024,
@@ -65,9 +65,10 @@ static bool init_covert_info(int argc, char **argv)
 	ci.strided_size	   = (uint64_t)atol(argv[5]);
 	ci.repeat	   = (uint64_t)atol(argv[6]);
 	ci.region_align	   = (uint64_t)atol(argv[7]);
-	ci.covert_file_id  = (size_t)atol(argv[8]);
 
 	uint64_t receiver_channel_page_offset = (uint64_t)atol(argv[8]);
+
+	ci.covert_file_id  = (size_t)atol(argv[9]);
 
 	/* Hard code */
 	ci.send_data = (uint64_t *)nvram_start;
@@ -107,6 +108,13 @@ static bool init_covert_info(int argc, char **argv)
 	/* Print */
 	covert_info_t *ci_ptr = &ci;
 	PRINT_COVERT_INFO(ci_ptr);
+
+	/* Print macros */
+	printf("CHASING_FENCE_STRATEGY_ID=%d\n", CHASING_FENCE_STRATEGY_ID);
+	printf("CHASING_FENCE_FREQ_ID=%d\n", CHASING_FENCE_FREQ_ID);
+	printf("CHASING_FLUSH_AFTER_LOAD=%d\n", CHASING_FLUSH_AFTER_LOAD);
+	printf("CHASING_FLUSH_L1=%d\n", CHASING_FLUSH_L1);
+	printf("CHASING_FLUSH_L1_TYPE=%s\n", CHASING_FLUSH_L1_TYPE);
 
 	return true;
 }
