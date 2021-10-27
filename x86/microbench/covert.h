@@ -3,7 +3,9 @@
 
 #include "libcflat.h"
 
-typedef enum { sender, receiver } covert_role_t;
+#define NVRAM_START (0x100000000)
+
+typedef enum { sender, receiver, vanilla } covert_role_t;
 
 typedef struct {
 	covert_role_t role_type;	/* Argument  */
@@ -38,4 +40,10 @@ typedef struct {
 	curr_data = ((ci->send_data[curr_iter / 64] >> i) & 0x1);
 
 void covert_ptr_chasing_load_only(covert_info_t *ci);
+
+#define GLOBAL_BIT	  36 /* 64GB/Global */
+#define GLOBAL_WORKSET	  (1ULL << GLOBAL_BIT)
+#define LATENCY_OPS_COUNT 1048576L
+
+void vanilla_ptr_chasing(covert_info_t *ci);
 #endif /* LENS_MICROBENCH_COVERT_H */

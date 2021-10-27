@@ -4,7 +4,7 @@
 #include "microbench/covert.h"
 #include "microbench/utils.h"
 
-static phys_addr_t nvram_start = 0x100000000;
+static phys_addr_t nvram_start = NVRAM_START;
 
 static bool test_print_chasing_help(void)
 {
@@ -54,9 +54,17 @@ static bool init_covert_info(int argc, char **argv)
 		ci.role_type = sender;
 	} else if (strcmp(argv[1], "receiver") == 0) {
 		ci.role_type = receiver;
+	} else if (strcmp(argv[1], "vanilla") == 0) {
+		ci.role_type = vanilla;
 	} else {
 		print_usage();
 		return false;
+	}
+
+	/* Developing */
+	if(ci.role_type == receiver) {
+		printf("DEVELOPING: adjust receiver buffer for 512MiB in case sender/receiver working on the same devdax\n");
+		nvram_start += 512 * 1024 * 1024;
 	}
 
 	ci.total_data_bits = (size_t)atol(argv[2]);
@@ -129,7 +137,6 @@ static void print_covert_data(void)
 
 static void covert_channel(void)
 {
-	init_chasing_index(ci.cindex, ci.region_size / ci.block_size);
 	if (ci.role_type == sender) {
 		print_covert_data();
 	}
@@ -180,8 +187,16 @@ int main(int argc, char **argv)
 	       "Print chasing microbenchmark help message");
 	report(check_and_set_up_sse(), "Set up SSE extension");
 
-	/* Run covert channel */
-	covert_channel();
+	/* Init chasing index */
+	init_chasing_index(ci.cindex, ci.region_size / ci.block_size);
+
+	if (ci.role_type == sender || ci.role_type == receiver) {
+		/* Run covert channel */
+		covert_channel();
+	} else if (ci.role_type == vanilla) {
+		/* Run vanilla pointer chasing */
+		vanilla_ptr_chasing(&ci);
+	}
 
 	return report_summary();
 }

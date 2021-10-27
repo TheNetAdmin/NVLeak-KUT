@@ -85,12 +85,12 @@
 	kr_info("[%s] region_size=%lu, block_size=%lu, region_skip=%lu, "      \
 		"stride_size=%lu, count=%lu, "                                 \
 		"cycle=%ld:%ld:%ld, fence_strategy=%s, fence_freq=%s, "        \
-		"repeat=%lu, region_align=%lu, "                       \
+		"repeat=%lu, region_align=%lu, "                               \
 		"flush_after_load=%s, flush_l1=%s, record_timing=%s",          \
 		meta.name, ci->region_size, ci->block_size, ci->region_skip,   \
 		ci->strided_size, ci->count, c_store_start, c_load_start,      \
 		c_load_end, meta.fence_strategy, meta.fence_freq, ci->repeat,  \
-		ci->region_align, meta.flush_after_load,               \
+		ci->region_align, meta.flush_after_load,                       \
 		meta.flush_l1, meta.record_timing);
 
 #define PRINT_COVERT_INFO(ci)                                                  \

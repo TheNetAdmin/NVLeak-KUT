@@ -1,6 +1,7 @@
 #include "covert.h"
 #include "chasing.h"
 #include "utils.h"
+#include "libcflat.h"
 
 void covert_ptr_chasing_load_only(covert_info_t *ci)
 {
@@ -125,5 +126,64 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 		break;
 	}
 
+	return;
+}
+
+void vanilla_ptr_chasing(covert_info_t *ci)
+{
+	unsigned int chasing_func_index;
+	PC_VARS;
+
+	size_t ti;
+	uint64_t *timing	= ci->timing;
+	uint64_t repeat = ci->repeat;
+	
+	/* find pointer chasing benchmark */
+	chasing_func_index = chasing_find_func(ci->block_size);
+	if (chasing_func_index == -1) {
+		kr_info("ERROR: Pointer chasing benchamrk with block size %ld byte not found\n",
+			ci->block_size);
+		goto vanilla_ptr_chasing_end;
+	}
+
+	/* decide region_skip */
+	ci->region_skip = (ci->region_size / ci->block_size) * ci->strided_size;
+
+	/* decide count */
+	ci->count = 1;
+
+	kr_info("Working set begin: %p end: %p, phy-begin: %lx, region_size=%lu, "
+		"region_skip=%lu, block_size=%lu, strided_size=%lu, "
+		"func=%s, count=%lu\n",
+		ci->buf, ci->buf + GLOBAL_WORKSET, NVRAM_START, ci->region_size,
+		ci->region_skip, ci->block_size, ci->strided_size,
+		chasing_func_list[chasing_func_index].name, ci->count);
+	
+	/* Init timing buffer */
+	TIMING_BUF_INIT(timing);
+
+	/* Pointer chasing read and write */
+
+	PC_BEFORE_WRITE
+	chasing_func_list[chasing_func_index].st_func(
+		ci->buf, ci->region_size, ci->strided_size, ci->region_skip,
+		ci->count, ci->repeat, ci->cindex, ci->timing);
+	asm volatile("mfence \n" :::);
+	PC_BEFORE_READ
+	chasing_func_list[chasing_func_index].ld_func(
+		ci->buf, ci->region_size, ci->strided_size, ci->region_skip,
+		ci->count, ci->repeat, ci->cindex, ci->timing + repeat * 2);
+	asm volatile("mfence \n" :::);
+	PC_AFTER_READ
+
+	COVERT_PC_STRIDED_PRINT_MEASUREMENT(
+		chasing_func_list[chasing_func_index]);
+	kr_info("[%s] ", chasing_func_list[chasing_func_index].name);
+	CHASING_PRINT_RECORD_TIMING("lat_st", (timing));
+	kr_info("[%s] ", chasing_func_list[chasing_func_index].name);
+	CHASING_PRINT_RECORD_TIMING("lat_ld", (timing + repeat * 2));
+	kr_info("\n");
+
+vanilla_ptr_chasing_end:
 	return;
 }

@@ -7,7 +7,7 @@ set_cpu_perf_mode=${set_cpu_perf_mode:-1}
 dump_covert_data=${dump_covert_data:-1}
 
 usage() {
-	echo "Usage: $0 [sender|receiver] [other args for nvsec_covert]"
+	echo "Usage: $0 [sender|receiver|vanilla] [other args for nvsec_covert]"
 }
 
 print_envs() {
@@ -65,18 +65,20 @@ popd || exit 1
 
 echo "Searching NVDIMM backend device"
 source "${curr_path}/utils/search_backend_dev.sh"
-search_backend_dev "${label}"
+backend_dev="$(search_backend_dev "${label}")"
+
+echo "Backend dev: ${backend_dev}"
 
 # RAM configs
 ram_size="1G"
 ram_slots="2"     # >= number of ram + number of nvram
-ram_max_size="2G" # >= $ram_size + $nvram_size
+ram_max_size="5G" # >= $ram_size + $nvram_size
 
 # QEMU path
 export QEMU="../qemu/build/x86_64-softmmu/qemu-system-x86_64"
 
 # QEMU configs
-nvram_size="1G"
+nvram_size="4G"
 nvram_align_size="1G"
 
 # QEMU args
