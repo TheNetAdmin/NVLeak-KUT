@@ -2,17 +2,21 @@
 
 search_backend_dev() {
 	# $1 sender|receiver
+	label="${1}"
 	if [ $# -ne 1 ]; then
 		echo "Wrong arguments, expected: sender|receiver"
 		exit 1
 	fi
 
-	if [ $1 != 'sender' ] && [ $1 != 'receiver' ]; then
+	if [ "${label}" == 'vanilla' ]; then
+		label='sender'
+	fi
+
+	if [ "${label}" != 'sender' ] && [ "${label}" != 'receiver' ]; then
 		echo "Wrong arguments, expected: sender|receiver"
 		exit 1
 	fi
 
-	label="$1"
 	same_devdax="${same_devdax:-}"
 	if [ -n "${same_devdax}" ]; then
 		# echo "Force using the same devdax with label: ${same_devdax}"

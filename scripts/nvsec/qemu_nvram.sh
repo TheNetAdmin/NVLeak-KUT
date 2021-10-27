@@ -34,6 +34,9 @@ case "${label}" in
 	receiver)
 		# Create receiver
 	;;
+	vanilla)
+		# Vanilla pointer chasing
+	;;
 	*)
 		usage
 		exit 1

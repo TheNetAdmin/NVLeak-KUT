@@ -102,9 +102,11 @@ static bool init_covert_info(int argc, char **argv)
 	       receiver_channel_page_offset);
 
 	/* Check arguments */
-	if (ci.total_data_bits * 8 > max_send_data_bytes) {
-		printf("Error: total send data bits too large\n");
-		return false;
+	if (ci.role_type == sender || ci.role_type == receiver) {
+		if (ci.total_data_bits * 8 > max_send_data_bytes) {
+			printf("Error: total send data bits too large\n");
+			return false;
+		}
 	}
 
 	if (ci.chasing_func_index < 0) {
