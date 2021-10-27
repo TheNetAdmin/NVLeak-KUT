@@ -174,7 +174,8 @@ function bench_func_inner() {
 													"$region_align" \
 													"$receiver_page_offset" \
 													"$covert_fid" \
-													> "${task_results_dir}/receiver.log" \
+													> >(tee -a "${task_results_dir}/receiver.log" > /dev/null) \
+													2>&1 \
 												&
 
 												# sender
@@ -188,7 +189,8 @@ function bench_func_inner() {
 													"$region_align" \
 													"$receiver_page_offset" \
 													"$covert_fid" \
-													> "${task_results_dir}/sender.log" \
+													> >(tee -a "${task_results_dir}/sender.log" > /dev/null) \
+													2>&1 \
 												&
 
 												wait
@@ -240,8 +242,20 @@ all)
 	batch_result_dir="results/${job}/${batch_id}"
 	bench_func
 	;;
+all_small)
+	batch_result_dir="results/${job}/${batch_id}"
+	receiver_page_offset_array=($(seq -s ' ' 0 15))
+	bench_func
+	;;
+all_small_same_devdax)
+	batch_result_dir="results/${job}/${batch_id}"
+	receiver_page_offset_array=($(seq -s ' ' 0 15))
+	covert_fid_array=(2)
+	export same_devdax="sender"
+	bench_func
+	;;
 *)
 	echo "Error usage: ${job}"
-	echo "Usage: $0 debug|all"
+	echo "Usage: $0 debug|all|all_small"
 	;;
 esac

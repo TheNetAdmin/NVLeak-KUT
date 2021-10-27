@@ -13,6 +13,11 @@ search_backend_dev() {
 	fi
 
 	label="$1"
+	same_devdax="${same_devdax:-}"
+	if [ -n "${same_devdax}" ]; then
+		# echo "Force using the same devdax with label: ${same_devdax}"
+		label="${same_devdax}"
+	fi
 	backend_name="dax-${label}"
 	backend_dev=$(ndctl list --namespaces | jq -r ".[] | select(.name == \"${backend_name}\") | .chardev")
 	if [ $? -ne 0 ]; then

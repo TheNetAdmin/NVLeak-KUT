@@ -38,6 +38,14 @@ gen_data_file() {
 
 pushd "${curr_path}" || exit 2
 
+
+# pattern 0: 0xAA
+# pattern 1: 0xCC
+# pattern 2: 0xF0
+# pattern 3: random.randint(0x00, 0xFF)
+# pattern 4: 0xFF
+# pattern 5: 0x00
+
 # Filename: ./${file_id}.${pattern}.${file_size_bit}.bin
 fid=0
 gen_data_file "${fid}" 0   64; ((fid+=1));
