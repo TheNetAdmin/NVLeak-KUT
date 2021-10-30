@@ -73,6 +73,7 @@ flush_after_load_array=(1)
 record_timing_array=(1) # 1: per_reapeat
 flush_l1_array=(0)
 receiver_page_offset_array=($(seq -s ' ' 0 255))
+iter_cycle_ddl=100000
 
 function run_qemu() {
 	# $1 sender | receiver
@@ -184,6 +185,7 @@ function bench_func_inner() {
 													"$region_align" \
 													"$receiver_page_offset" \
 													"$covert_fid" \
+													"$iter_cycle_ddl" \
 													> >(tee -a "${task_results_dir}/receiver.log" > /dev/null) \
 													2>&1 \
 												&
@@ -199,6 +201,7 @@ function bench_func_inner() {
 													"$region_align" \
 													"$receiver_page_offset" \
 													"$covert_fid" \
+													"$iter_cycle_ddl" \
 													> >(tee -a "${task_results_dir}/sender.log" > /dev/null) \
 													2>&1 \
 												&
@@ -237,13 +240,14 @@ function bench_func() {
 job=$1
 case $job in
 debug)
-	region_array=($((2 ** 12)))
+	region_array=($((2 ** 11)))
 	stride_array=($((2 ** 20)))
 	flush_l1_array=(0)
-	repeat_array=(32)
+	repeat_array=(16)
+	iter_cycle_ddl=$((16 * 50000))
 	flush_after_load_array=(1)
 	receiver_page_offset_array=(0 1 2 3)
-	covert_fid_array=(2)
+	covert_fid_array=(20 21)
 	export no_slack=1
 	batch_result_dir="results/${job}/${batch_id}"
 	bench_func

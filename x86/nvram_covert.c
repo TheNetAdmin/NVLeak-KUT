@@ -29,8 +29,9 @@ static void print_usage(void)
 	printf("      region_align\n");
 	printf("      receiver_channel_page_offset\n");
 	printf("      covert_file_id\n");
+	printf("      iter_cycle_ddl\n");
 }
-static const unsigned total_args = 9;
+static const unsigned total_args = 10;
 
 enum { max_send_data_bytes = 8 * 1024 * 1024,
        buf_offset	   = 32 * 1024 * 1024,
@@ -77,6 +78,7 @@ static bool init_covert_info(int argc, char **argv)
 	uint64_t receiver_channel_page_offset = (uint64_t)atol(argv[8]);
 
 	ci.covert_file_id  = (size_t)atol(argv[9]);
+	ci.iter_cycle_ddl  = (size_t)atol(argv[10]);
 
 	/* Hard code */
 	ci.send_data = (uint64_t *)nvram_start;

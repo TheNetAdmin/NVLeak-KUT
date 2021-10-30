@@ -86,12 +86,15 @@
 		"stride_size=%lu, count=%lu, "                                 \
 		"cycle=%ld:%ld:%ld, fence_strategy=%s, fence_freq=%s, "        \
 		"repeat=%lu, region_align=%lu, "                               \
-		"flush_after_load=%s, flush_l1=%s, record_timing=%s",          \
+		"flush_after_load=%s, flush_l1=%s, record_timing=%s, "         \
+		"total_cycle=%lu, cycle_beg_since_all_beg=%lu",                \
 		meta.name, ci->region_size, ci->block_size, ci->region_skip,   \
 		ci->strided_size, ci->count, c_store_start, c_load_start,      \
 		c_load_end, meta.fence_strategy, meta.fence_freq, ci->repeat,  \
 		ci->region_align, meta.flush_after_load,                       \
-		meta.flush_l1, meta.record_timing);
+		meta.flush_l1, meta.record_timing, cycle_end - cycle_beg,      \
+		cycle_beg - cycle_all_beg                                      \
+		);
 
 #define PRINT_COVERT_INFO(ci)                                                  \
 	kr_info("buf_addr %p\n", ci->buf);                                     \
@@ -109,7 +112,8 @@
 		"region_align=%lu, "                                           \
 		"cindex=%p, "                                                  \
 		"timing=%p, "                                                  \
-		"covert_file_id=%lu, ",                                        \
+		"covert_file_id=%lu, "                                         \
+		"iter_cycle_ddl=%lu, ",                                        \
 		ci->role_type,                                                 \
 		ci->total_data_bits,                                           \
 		ci->send_data,                                                 \
@@ -124,7 +128,9 @@
 		ci->region_align,                                              \
 		ci->cindex,                                                    \
 		ci->timing,                                                    \
-		ci->covert_file_id);                                           \
+		ci->covert_file_id,                                            \
+		ci->iter_cycle_ddl                                             \
+		);                                                             \
 	kr_info("\n");
 
 #endif /* LENS_UTILS_H */

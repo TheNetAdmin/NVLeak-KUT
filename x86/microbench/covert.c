@@ -2,6 +2,35 @@
 #include "chasing.h"
 #include "utils.h"
 #include "libcflat.h"
+#include "processor.h"
+
+static inline void wait_until_ddl(uint64_t cycle_beg, uint64_t cycle_end,
+				  uint64_t cycle_ddl)
+{
+	/* Target ddl */
+	uint64_t cycle_tgt = cycle_beg + cycle_ddl;
+
+	if (cycle_end > cycle_tgt) {
+		printf("WARNING: iter_cycle_end [%lu] exceeds iter_cycle_ddl [%lu], skipping wait\n",
+		       cycle_end, cycle_tgt);
+		return;
+	}
+
+	u32		   aux;
+	unsigned long long cycle_cur;
+	do {
+		/* 1024 cycle granularity */
+		for (int i = 0; i < 1024 / 16; i++) {
+			asm volatile("nop\n nop\n nop\n nop\n "
+				     "nop\n nop\n nop\n nop\n "
+				     "nop\n nop\n nop\n nop\n "
+				     "nop\n nop\n nop\n nop\n ");
+		}
+		cycle_cur = rdtscp(&aux);
+	} while (cycle_cur < cycle_tgt);
+
+	printf("ddl_reached_cycle=%llu\n", cycle_cur);
+}
 
 void covert_ptr_chasing_load_only(covert_info_t *ci)
 {
@@ -15,6 +44,12 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 	char *	  bit_0_channel = ci->buf;
 	char *	  bit_1_channel = ci->buf + 4096;
 	uint64_t *timing	= ci->timing;
+
+	uint64_t cycle_all_beg;
+	uint64_t cycle_beg, cycle_end;
+	uint32_t cycle_aux;
+
+	cycle_all_beg = rdtscp(&cycle_aux);
 
 	/* 
 	 * NOTE: assume L2 16 way
@@ -50,6 +85,7 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 			ci->send_data, ci->total_data_bits);
 
 		for (i = 0; i < ci->total_data_bits; i++) {
+			cycle_beg = rdtscp(&cycle_aux);
 			CURR_DATA(curr_data, i);
 			kr_info("Waiting to send bit_id=%ld, bit_data=%lu\n", i,
 				curr_data);
@@ -77,6 +113,10 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 			asm volatile("mfence \n" :::);
 			PC_AFTER_READ
 
+			cycle_end = rdtscp(&cycle_aux);
+
+			wait_until_ddl(cycle_beg, cycle_end, ci->iter_cycle_ddl);
+
 			COVERT_PC_STRIDED_PRINT_MEASUREMENT(
 				chasing_func_list[ci->chasing_func_index]);
 			kr_info("[%s] ",
@@ -96,6 +136,7 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 		 *       multiple sets
 		 */
 		for (i = 0; i < ci->total_data_bits; i++) {
+			cycle_beg = rdtscp(&cycle_aux);
 			kr_info("Waiting to receive bit_id=%ld\n", i);
 			TIMING_BUF_INIT(timing);
 
@@ -118,6 +159,10 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 				ci->timing + repeat * 2);
 			asm volatile("mfence \n" :::);
 			PC_AFTER_READ
+
+			cycle_end = rdtscp(&cycle_aux);
+
+			wait_until_ddl(cycle_beg, cycle_end, ci->iter_cycle_ddl);
 
 			COVERT_PC_STRIDED_PRINT_MEASUREMENT(
 				chasing_func_list[ci->chasing_func_index]);
@@ -148,6 +193,12 @@ void vanilla_ptr_chasing(covert_info_t *ci)
 	uint64_t *timing	= ci->timing;
 	uint64_t repeat = ci->repeat;
 	
+	uint64_t cycle_all_beg;
+	uint64_t cycle_beg, cycle_end;
+	uint32_t cycle_aux;
+
+	cycle_all_beg = rdtscp(&cycle_aux);
+
 	/* find pointer chasing benchmark */
 	chasing_func_index = chasing_find_func(ci->block_size);
 	if (chasing_func_index == -1) {
@@ -169,6 +220,8 @@ void vanilla_ptr_chasing(covert_info_t *ci)
 		ci->region_skip, ci->block_size, ci->strided_size,
 		chasing_func_list[chasing_func_index].name, ci->count);
 	
+	cycle_beg = rdtscp(&cycle_aux);
+
 	/* Init timing buffer */
 	TIMING_BUF_INIT(timing);
 
@@ -185,6 +238,8 @@ void vanilla_ptr_chasing(covert_info_t *ci)
 		ci->count, ci->repeat, ci->cindex, ci->timing + repeat * 2);
 	asm volatile("mfence \n" :::);
 	PC_AFTER_READ
+
+	cycle_end = rdtscp(&cycle_aux);
 
 	COVERT_PC_STRIDED_PRINT_MEASUREMENT(
 		chasing_func_list[chasing_func_index]);

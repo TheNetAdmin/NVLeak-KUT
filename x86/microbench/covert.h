@@ -20,6 +20,7 @@ typedef struct {
 	uint64_t block_size;		/* Argument  */
 	uint64_t repeat;		/* Argument  */
 	uint64_t count;			/* Hard code */
+	uint64_t iter_cycle_ddl;	/* Argument  */
 
 	/* Pointer chasing info */
 	size_t	  chasing_func_index;	/* Deduct    */
