@@ -237,13 +237,25 @@ function bench_func() {
 job=$1
 case $job in
 debug)
-	region_array=($((2 ** 10)))
+	region_array=($((2 ** 12)))
 	stride_array=($((2 ** 20)))
-	flush_l1_array=(1)
+	flush_l1_array=(0)
 	repeat_array=(32)
 	flush_after_load_array=(1)
 	receiver_page_offset_array=(0 1 2 3)
-	covert_fid_array=(20)
+	covert_fid_array=(2)
+	export no_slack=1
+	batch_result_dir="results/${job}/${batch_id}"
+	bench_func
+	;;
+debug_single)
+	region_array=($((2 ** 10)))
+	stride_array=($((2 ** 20)))
+	flush_l1_array=(0)
+	repeat_array=(16)
+	flush_after_load_array=(0)
+	receiver_page_offset_array=(0)
+	covert_fid_array=(2)
 	export no_slack=1
 	batch_result_dir="results/${job}/${batch_id}"
 	bench_func

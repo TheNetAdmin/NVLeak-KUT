@@ -103,3 +103,26 @@ int init_chasing_index(uint64_t *cindex, uint64_t csize)
 
 	return 0;
 }
+
+void print_chasing_index(uint64_t *cindex, uint64_t csize)
+{
+	uint64_t cols = 8;
+	uint64_t i, j;
+
+	printf("%6s:", "row");
+	for (i = 0; i < cols; i++) {
+		printf(" %6lu", i);
+	}
+	printf("\n");
+
+	for (j = 0; j * cols < csize; j++) {
+		printf("%6lu:", j);
+		for (i = 0; i < cols; i++) {
+			if ((j * cols + i) > csize) {
+				break;
+			}
+			printf(" %6lu", cindex[j * cols + i]);
+		}
+		printf("\n");
+	}
+}

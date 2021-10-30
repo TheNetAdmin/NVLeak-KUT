@@ -727,5 +727,6 @@ int chasing_find_func(uint64_t block_size);
  *   benchmarks.
  */
 int init_chasing_index(uint64_t *cindex, uint64_t csize);
+void print_chasing_index(uint64_t *cindex, uint64_t csize);
 
 #endif // CHASING_H

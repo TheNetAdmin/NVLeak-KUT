@@ -191,6 +191,8 @@ int main(int argc, char **argv)
 
 	/* Init chasing index */
 	init_chasing_index(ci.cindex, ci.region_size / ci.block_size);
+	// printf("Chasing index:\n");
+	// print_chasing_index(ci.cindex, ci.region_size / ci.block_size);
 
 	if (ci.role_type == sender || ci.role_type == receiver) {
 		/* Run covert channel */
