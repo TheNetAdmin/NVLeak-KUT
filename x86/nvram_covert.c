@@ -62,10 +62,10 @@ static bool init_covert_info(int argc, char **argv)
 	}
 
 	/* Developing */
-	if(ci.role_type == receiver) {
-		printf("DEVELOPING: adjust receiver buffer for 512MiB in case sender/receiver working on the same devdax\n");
-		nvram_start += 512 * 1024 * 1024;
-	}
+	// if(ci.role_type == receiver) {
+	// 	printf("DEVELOPING: adjust receiver buffer for 512MiB in case sender/receiver working on the same devdax\n");
+	// 	nvram_start += 512 * 1024 * 1024;
+	// }
 
 	ci.total_data_bits = (size_t)atol(argv[2]);
 	ci.region_size	   = (uint64_t)atol(argv[3]);

@@ -163,7 +163,7 @@ int main(int argc, char *argv[])
 		read_data_pmem(ptr, 4);
 	} else if (operation == WRITE_FILE) {
 		printf("Writing file [%s] (size [%lu]) to [%p]\n", in_file_path,
-		       in_file_size);
+		       in_file_size, ptr);
 		write_file_pmem(ptr, in_file_path, in_file_size);
 		read_data_pmem(ptr, (in_file_size / 8) + 1);
 	}

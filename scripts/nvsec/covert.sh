@@ -10,6 +10,7 @@ export SlackURL=https://hooks.slack.com/services/T01RKAD575E/B01R790K07M/N46d8FW
 
 source "$script_root/utils/remake.sh"
 source "$script_root/utils/search_backend_dev.sh"
+source "$script_root/utils/aepwatch.sh"
 
 prepare() {
 	echo "Set host CPU into performance mode"
@@ -19,13 +20,22 @@ prepare() {
 	# Disable cache prefetcher
 	echo "Disable cache prefetcher"
 	wrmsr -a 0x1a4 0xf
+	# Load profiler
+	load_profiler
+	TaskDir=$PWD \
+	start_profiler
 }
 
 cleanup() {
+	# Unload profiler
+	stop_profiler || true
+	unload_profiler
 	# Enable cache prefetcher
 	echo "Re-enable cache prefetcher"
 	wrmsr -a 0x1a4 0x0
 }
+
+trap cleanup EXIT
 
 covert_fid_array=(
 	20
@@ -48,20 +58,20 @@ region_array=(
 	# $((2 **  8))
 	# $((2 **  9))
 	# $(seq -s ' ' $((2 ** 9)) $((2 ** 6)) $((2 ** 10 - 1)))
-	# $((2 ** 10)) # 16 * 64 --> 16 blocks --> 16 way
-	$((2 ** 11))
+	$((2 ** 10)) # 16 * 64 --> 16 blocks --> 16 way
+	# $((2 ** 11))
 	# $((2 ** 12))
 	# $((2 ** 13))
 )
 sub_op_array=(1) # Covert channel: Pointer chasing read only
-repeat_array=(16)
+repeat_array=(32)
 region_align=4096
 
 fence_strategy_array=(0)
 fence_freq_array=(1)
 flush_after_load_array=(1)
 record_timing_array=(1) # 1: per_reapeat
-flush_l1_array=(1)
+flush_l1_array=(0)
 receiver_page_offset_array=($(seq -s ' ' 0 255))
 
 function run_qemu() {
@@ -227,13 +237,13 @@ function bench_func() {
 job=$1
 case $job in
 debug)
-	region_array=($((2 ** 11)))
-	stride_array=($((2 ** 21)))
+	region_array=($((2 ** 10)))
+	stride_array=($((2 ** 20)))
 	flush_l1_array=(1)
-	repeat_array=(16)
+	repeat_array=(32)
 	flush_after_load_array=(1)
-	receiver_page_offset_array=(0)
-	covert_fid_array=(20 21)
+	receiver_page_offset_array=(0 1 2 3)
+	covert_fid_array=(20)
 	export no_slack=1
 	batch_result_dir="results/${job}/${batch_id}"
 	bench_func
@@ -248,6 +258,8 @@ all_small)
 	bench_func
 	;;
 all_small_same_devdax)
+	echo "ERROR: Check receiver address offset before running"
+	exit 1
 	batch_result_dir="results/${job}/${batch_id}"
 	receiver_page_offset_array=($(seq -s ' ' 0 15))
 	covert_fid_array=(2)

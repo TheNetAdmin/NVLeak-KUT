@@ -63,6 +63,11 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 				curr_data, i, covert_channel);
 
 			PC_BEFORE_WRITE
+			// chasing_func_list[ci->chasing_func_index].st_func(
+			// 	covert_channel, ci->region_size,
+			// 	ci->strided_size, ci->region_skip, ci->count,
+			// 	ci->repeat, ci->cindex,
+			// 	ci->timing);
 			PC_BEFORE_READ
 			chasing_func_list[ci->chasing_func_index].ld_func(
 				covert_channel, ci->region_size,
@@ -100,6 +105,11 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 				covert_channel);
 
 			PC_BEFORE_WRITE
+			// chasing_func_list[ci->chasing_func_index].st_func(
+			// 	covert_channel, ci->region_size,
+			// 	ci->strided_size, ci->region_skip, ci->count,
+			// 	ci->repeat, ci->cindex,
+			// 	ci->timing);
 			PC_BEFORE_READ
 			chasing_func_list[ci->chasing_func_index].ld_func(
 				covert_channel, ci->region_size,
