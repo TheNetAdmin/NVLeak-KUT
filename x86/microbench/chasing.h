@@ -231,7 +231,11 @@
 #define CHASING_PER_BLOCK_TIMING_END(TIMING_BUF)		"\n"
 
 #define TIMING_BUF_INIT(timing_buf)                                            \
-	do {} while(0);
+	do {                                                                   \
+		asm volatile("mfence");                                        \
+		memset(timing, 0, sizeof(uint64_t) * (ci->repeat * 4));        \
+		asm volatile("mfence");                                        \
+	} while (0);
 
 #define CHASING_PRINT_RECORD_TIMING_BASE(prefix, timing_buf, cnt, base)        \
 	for (ti = 0; ti < cnt; ti++) {                                         \

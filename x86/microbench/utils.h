@@ -161,4 +161,10 @@
 		);                                                             \
 	kr_info("\n");
 
+#define CLEAR_CPU_PIPELINE()                                                   \
+	asm volatile("nop\n nop\n nop\n nop\n "                                \
+		     "nop\n nop\n nop\n nop\n "                                \
+		     "nop\n nop\n nop\n nop\n "                                \
+		     "nop\n nop\n nop\n nop\n ");
+
 #endif /* LENS_UTILS_H */

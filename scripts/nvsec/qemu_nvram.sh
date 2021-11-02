@@ -44,16 +44,18 @@ case "${label}" in
 esac
 
 # Print envs
-print_envs
+# print_envs
 
 # Build kernel
 kernel_file="nvram_covert.flat"
 kernel_path="${curr_path}/../../x86/${kernel_file}"
 kernel_path="$(realpath "${kernel_path}")"
 
+if (( dump_covert_data == 1 )); then
 pushd "$(dirname "${kernel_path}")/../" || exit 1
 make -j 10 "x86/${kernel_file}" || exit 1
 popd || exit 1
+fi
 
 # # Check if PMEM is mounted
 # echo "Check if PMEM is mounted"
@@ -73,9 +75,9 @@ backend_dev="$(search_backend_dev "${label}")"
 echo "Backend dev: ${backend_dev}"
 
 # RAM configs
-ram_size="1G"
+ram_size="2G"
 ram_slots="2"     # >= number of ram + number of nvram
-ram_max_size="5G" # >= $ram_size + $nvram_size
+ram_max_size="6G" # >= $ram_size + $nvram_size
 
 # QEMU path
 export QEMU="../qemu/build/x86_64-softmmu/qemu-system-x86_64"
@@ -164,5 +166,7 @@ if ((use_tmux == 1)); then
 else
 	echo QEMU=${QEMU}
 	echo qemu_command: ${qemu_command}
+	echo "Start at: $(date +"%T.%N")"
 	${qemu_command}
+	echo "Done at: $(date +"%T.%N")"
 fi

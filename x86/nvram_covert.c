@@ -45,6 +45,7 @@ static bool init_covert_info(int argc, char **argv)
 {
 	uint32_t cycle_aux;
 	ci.cycle_global_beg = rdtscp(&cycle_aux);
+	asm volatile("mfence");
 
 	/* TODO: Change to use getenv instead of args */
 
@@ -89,20 +90,6 @@ static bool init_covert_info(int argc, char **argv)
 	ci.send_data = (uint64_t *)nvram_start;
 	ci.buf	     = (char *)(nvram_start + buf_offset);
 
-	/* Allocated */
-	ci.cindex    = (uint64_t *)malloc(sizeof(uint64_t) * (ci.region_size / ci.block_size));
-
-	size_t timing_per_bit_size = sizeof(uint64_t) * (ci.repeat * 4);
-	size_t timing_total_size = timing_per_bit_size * (ci.total_data_bits * 2);
-	ci.timing		 = (uint64_t *)malloc(timing_total_size);
-	memset(ci.timing, 0, timing_total_size);
-
-	ci.result = (covert_result_t *)malloc(sizeof(covert_result_t) *
-					      (ci.total_data_bits * 2));
-	for (uint64_t i = 0; i < (ci.total_data_bits * 2); i++) {
-		ci.result[i].timing = ci.timing + i * (ci.repeat * 4);
-	}
-
 	/* 
 	 * NOTE: to ensure pc-stride always work on only one region, not to
 	 *       move to the next region. This is for multi repeats.
@@ -135,16 +122,30 @@ static bool init_covert_info(int argc, char **argv)
 		return false;
 	}
 
+	/* Allocated */
+	ci.cindex    = (uint64_t *)malloc(sizeof(uint64_t) * (ci.region_size / ci.block_size));
+
+	size_t timing_per_bit_size = sizeof(uint64_t) * (ci.repeat * 4);
+	size_t timing_total_size = timing_per_bit_size * (ci.total_data_bits * 2);
+	ci.timing		 = (uint64_t *)malloc(timing_total_size);
+	memset(ci.timing, 0, timing_total_size);
+
+	ci.result = (covert_result_t *)malloc(sizeof(covert_result_t) *
+					      (ci.total_data_bits * 2));
+	for (uint64_t i = 0; i < (ci.total_data_bits * 2); i++) {
+		ci.result[i].timing = ci.timing + i * (ci.repeat * 4);
+	}
+
 	/* Print */
-	covert_info_t *ci_ptr = &ci;
-	PRINT_COVERT_INFO(ci_ptr);
+	// covert_info_t *ci_ptr = &ci;
+	// PRINT_COVERT_INFO(ci_ptr);
 
 	/* Print macros */
-	printf("CHASING_FENCE_STRATEGY_ID=%d\n", CHASING_FENCE_STRATEGY_ID);
-	printf("CHASING_FENCE_FREQ_ID=%d\n", CHASING_FENCE_FREQ_ID);
-	printf("CHASING_FLUSH_AFTER_LOAD=%d\n", CHASING_FLUSH_AFTER_LOAD);
-	printf("CHASING_FLUSH_L1=%d\n", CHASING_FLUSH_L1);
-	printf("CHASING_FLUSH_L1_TYPE=%s\n", CHASING_FLUSH_L1_TYPE);
+	// printf("CHASING_FENCE_STRATEGY_ID=%d\n", CHASING_FENCE_STRATEGY_ID);
+	// printf("CHASING_FENCE_FREQ_ID=%d\n", CHASING_FENCE_FREQ_ID);
+	// printf("CHASING_FLUSH_AFTER_LOAD=%d\n", CHASING_FLUSH_AFTER_LOAD);
+	// printf("CHASING_FLUSH_L1=%d\n", CHASING_FLUSH_L1);
+	// printf("CHASING_FLUSH_L1_TYPE=%s\n", CHASING_FLUSH_L1_TYPE);
 
 	return true;
 }
@@ -160,7 +161,7 @@ static void print_covert_data(void)
 static void covert_channel(void)
 {
 	if (ci.role_type == sender) {
-		print_covert_data();
+		// print_covert_data();
 	}
 	covert_ptr_chasing_load_only(&ci);
 	covert_ptr_chasing_print(&ci);

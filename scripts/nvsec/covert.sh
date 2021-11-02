@@ -257,9 +257,10 @@ debug_single)
 	stride_array=($((2 ** 21)))
 	flush_l1_array=(0)
 	repeat_array=(16)
-	flush_after_load_array=(0)
+	iter_cycle_ddl=$((16 * 70000))
+	flush_after_load_array=(1)
 	receiver_page_offset_array=(0)
-	covert_fid_array=(2)
+	covert_fid_array=(10)
 	export no_slack=1
 	batch_result_dir="results/${job}/${batch_id}"
 	bench_func

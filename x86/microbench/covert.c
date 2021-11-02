@@ -58,6 +58,7 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 	covert_result_t *cr;
 
 	cycle_all_beg = rdtscp(&cycle_aux);
+	asm volatile("mfence");
 
 	/* 
 	 * NOTE: assume L2 16 way
@@ -78,8 +79,6 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 		ci->region_skip, ci->count, ci->repeat, ci->cindex, ci->timing);
 	asm volatile("mfence \n" :::);
 
-	memset(ci->timing, 0, sizeof(uint64_t) * (ci->repeat * 4));
-
 	switch (ci->role_type) {
 	case 0: // sender
 		// send 64 bits
@@ -88,14 +87,18 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 
 		for (i = 0; i < ci->total_data_bits; i++) {
 			cycle_beg = rdtscp(&cycle_aux);
+			asm volatile("mfence");
 			cr = &ci->result[i];
-			timing = cr->timing;
+			timing = cr->timing + i * (ci->repeat * 4);
 			CURR_DATA(curr_data, i);
 			// kr_info("Waiting to send bit_id=%ld, bit_data=%lu\n", i,
 			// 	curr_data);
 			cycle_timing_init_beg = rdtscp(&cycle_aux);
+			asm volatile("mfence");
 			TIMING_BUF_INIT(timing);
+			CLEAR_CPU_PIPELINE();
 			cycle_timing_init_end = rdtscp(&cycle_aux);
+			asm volatile("mfence");
 			/* KEEP IN SYNC WITH _print function */
 			if (curr_data == 0x0) {
 				covert_channel = bit_0_channel;
@@ -111,6 +114,7 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 			// 	ci->strided_size, ci->region_skip, ci->count,
 			// 	ci->repeat, ci->cindex,
 			// 	timing);
+			CLEAR_CPU_PIPELINE();
 			PC_BEFORE_READ
 			chasing_func_list[ci->chasing_func_index].ld_func(
 				covert_channel, ci->region_size,
@@ -121,8 +125,10 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 			PC_AFTER_READ
 
 			cycle_end = rdtscp(&cycle_aux);
+			asm volatile("mfence");
 
 			cycle_ddl_end = wait_until_ddl(cycle_beg, cycle_end, ci->iter_cycle_ddl);
+			asm volatile("mfence");
 
 			// COVERT_PC_STRIDED_PRINT_MEASUREMENT(
 			// 	chasing_func_list[ci->chasing_func_index]);
@@ -134,8 +140,9 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 			// CHASING_PRINT_RECORD_TIMING("lat_ld",
 			// 			    (timing + repeat * 2));
 			// kr_info("\n");
-			
+			CLEAR_CPU_PIPELINE();
 			cycle_stats_end = rdtscp(&cycle_aux);
+			asm volatile("mfence");
 
 			RECORD_CYCLES(cr);
 
@@ -150,13 +157,17 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 		 */
 		for (i = 0; i < ci->total_data_bits; i++) {
 			cycle_beg = rdtscp(&cycle_aux);
+			asm volatile("mfence");
 			cr = &ci->result[i];
-			timing = cr->timing;
+			timing = cr->timing + i * (ci->repeat * 4);
 			// kr_info("Waiting to receive bit_id=%ld\n", i);
 			
 			cycle_timing_init_beg = rdtscp(&cycle_aux);
+			asm volatile("mfence");
 			TIMING_BUF_INIT(timing);
+			CLEAR_CPU_PIPELINE();
 			cycle_timing_init_end = rdtscp(&cycle_aux);
+			asm volatile("mfence");
 
 			/* KEEP IN SYNC WITH _print function */
 			covert_channel = bit_0_channel;
@@ -170,6 +181,7 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 			// 	ci->strided_size, ci->region_skip, ci->count,
 			// 	ci->repeat, ci->cindex,
 			// 	timing);
+			CLEAR_CPU_PIPELINE();
 			PC_BEFORE_READ
 			chasing_func_list[ci->chasing_func_index].ld_func(
 				covert_channel, ci->region_size,
@@ -180,6 +192,7 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 			PC_AFTER_READ
 
 			cycle_end = rdtscp(&cycle_aux);
+			asm volatile("mfence");
 
 			cycle_ddl_end = wait_until_ddl(cycle_beg, cycle_end, ci->iter_cycle_ddl);
 
@@ -193,8 +206,9 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 			// CHASING_PRINT_RECORD_TIMING("lat_ld",
 			// 			    (timing + repeat * 2));
 			// kr_info("\n");
-			
+			CLEAR_CPU_PIPELINE();
 			cycle_stats_end = rdtscp(&cycle_aux);
+			asm volatile("mfence");
 
 			RECORD_CYCLES(cr);
 
@@ -232,7 +246,7 @@ void covert_ptr_chasing_print(covert_info_t *ci)
 
 		for (i = 0; i < ci->total_data_bits; i++) {
 			cr = &ci->result[i];
-			timing = cr->timing;
+			timing = cr->timing + i * (ci->repeat * 4);
 			CURR_DATA(curr_data, i);
 			kr_info("Waiting to send bit_id=%ld, bit_data=%lu\n", i,
 				curr_data);
@@ -252,7 +266,7 @@ void covert_ptr_chasing_print(covert_info_t *ci)
 			kr_info("[%s] ",
 				chasing_func_list[ci->chasing_func_index].name);
 			CHASING_PRINT_RECORD_TIMING("lat_ld",
-						    (ci->timing + repeat * 2));
+						    (timing + repeat * 2));
 			kr_info("\n");
 			
 			PRINT_CYCLES(cr, ci);
@@ -263,7 +277,7 @@ void covert_ptr_chasing_print(covert_info_t *ci)
 	case 1: // receiver
 		for (i = 0; i < ci->total_data_bits; i++) {
 			cr = &ci->result[i];
-			timing = cr->timing;
+			timing = cr->timing + i * (ci->repeat * 4);
 			kr_info("Waiting to receive bit_id=%ld\n", i);
 
 			covert_channel = bit_0_channel;
@@ -278,7 +292,7 @@ void covert_ptr_chasing_print(covert_info_t *ci)
 			kr_info("[%s] ",
 				chasing_func_list[ci->chasing_func_index].name);
 			CHASING_PRINT_RECORD_TIMING("lat_ld",
-						    (ci->timing + repeat * 2));
+						    (timing + repeat * 2));
 			kr_info("\n");
 			
 			PRINT_CYCLES(cr, ci);
