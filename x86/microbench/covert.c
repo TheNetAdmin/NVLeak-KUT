@@ -225,9 +225,20 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 
 void covert_ptr_chasing_print(covert_info_t *ci)
 {
+	PRINT_COVERT_INFO(ci);
+
+	if (ci->role_type == sender) {
+		printf("Send data:\n");
+		for (int i = 0; i < ci->total_data_bits / 64; i++) {
+			printf("  [%04d]: 0x%016lx\n", i, ci->send_data[i]);
+		}
+		printf("\n");
+	}
+
 	char *	  covert_channel;
 	char *	  bit_0_channel = ci->buf;
 	char *	  bit_1_channel = ci->buf + 4096;
+
 	kr_info("covert_strategy=ptr_chasing_load_only\n");
 	kr_info("Init bit 0 channel: %p\n", bit_0_channel);
 	kr_info("Init bit 1 channel: %p\n", bit_1_channel);
