@@ -2,10 +2,35 @@
 #define LENS_MICROBENCH_COVERT_H
 
 #include "libcflat.h"
+#include "print_info.h"
 
 #define NVRAM_START (0x100000000)
 
 typedef enum { sender, receiver, vanilla } covert_role_t;
+
+typedef uint64_t cycle_t;
+
+typedef struct {
+	/* Data */
+	// uint32_t  bit_id;
+	// uint8_t	  bit_data;
+	// uint64_t *bit_channel;
+	uint64_t *timing;
+
+	/* Cycles -- Conventional */
+	cycle_t c_store_start;
+	cycle_t c_load_start;
+	cycle_t c_load_end;
+
+	/* Cycles -- Profiling */
+	cycle_t cycle_all_beg;
+	cycle_t cycle_beg;
+	cycle_t cycle_end;
+	cycle_t cycle_timing_init_beg;
+	cycle_t cycle_timing_init_end;
+	cycle_t cycle_ddl_end;
+	cycle_t cycle_stats_end;
+} covert_result_t;
 
 typedef struct {
 	covert_role_t role_type;	/* Argument  */
@@ -28,19 +53,17 @@ typedef struct {
 	uint64_t  region_align;		/* Argument  */
 	uint64_t *cindex;		/* Hard code */
 	uint64_t *timing;		/* Hard code */
+
+	/* Result */
+	covert_result_t *result;	/* Generated */
 } covert_info_t;
 
-#ifndef kr_info
-#define kr_info(string, args...)                                               \
-	do {                                                                   \
-		printf(string "\n", ##args);                                   \
-	} while (0)
-#endif
 
 #define CURR_DATA(curr_data, curr_iter)                                        \
 	curr_data = ((ci->send_data[curr_iter / 64] >> i) & 0x1);
 
 void covert_ptr_chasing_load_only(covert_info_t *ci);
+void covert_ptr_chasing_print(covert_info_t *ci);
 
 #define GLOBAL_BIT	  36 /* 64GB/Global */
 #define GLOBAL_WORKSET	  (1ULL << GLOBAL_BIT)

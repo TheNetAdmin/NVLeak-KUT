@@ -1,8 +1,10 @@
 #include "libcflat.h"
 #include "processor.h"
+#include "alloc.h"
 #include "microbench/chasing.h"
 #include "microbench/covert.h"
 #include "microbench/utils.h"
+#include "microbench/print_info.h"
 
 static phys_addr_t nvram_start = NVRAM_START;
 
@@ -83,8 +85,21 @@ static bool init_covert_info(int argc, char **argv)
 	/* Hard code */
 	ci.send_data = (uint64_t *)nvram_start;
 	ci.buf	     = (char *)(nvram_start + buf_offset);
-	ci.timing    = (uint64_t *)(nvram_start + timing_offset);
-	ci.cindex    = (uint64_t *)(nvram_start + cindex_offset);
+
+	/* Allocated */
+	ci.cindex    = (uint64_t *)malloc(sizeof(uint64_t) * (ci.region_size / ci.block_size));
+
+	size_t timing_per_bit_size = sizeof(uint64_t) * (ci.repeat * 4);
+	size_t timing_total_size = timing_per_bit_size * (ci.total_data_bits * 2);
+	ci.timing		 = (uint64_t *)malloc(timing_total_size);
+	memset(ci.timing, 0, timing_total_size);
+
+	ci.result = (covert_result_t *)malloc(sizeof(covert_result_t) *
+					      (ci.total_data_bits * 2));
+	for (uint64_t i = 0; i < (ci.total_data_bits * 2); i++) {
+		ci.result[i].timing = ci.timing + i * (ci.repeat * 4);
+	}
+
 	/* 
 	 * NOTE: to ensure pc-stride always work on only one region, not to
 	 *       move to the next region. This is for multi repeats.
@@ -156,18 +171,18 @@ static bool check_and_set_up_sse(void)
 
 	/* Clear CR0.EM, set CR0.MP */
 	ulong cr0 = read_cr0();
-	printf("cr0 = 0x%016lx\n", cr0);
+	debug_printf("cr0 = 0x%016lx\n", cr0);
 	cr0 &= ~(X86_CR0_EM);
 	cr0 |= X86_CR0_MP;
-	printf("cr0 = 0x%016lx\n", cr0);
+	debug_printf("cr0 = 0x%016lx\n", cr0);
 	write_cr0(cr0);
 
 	/* Set CR4.OSFXSR and CR4.OSXMMEXCPT */
 	ulong cr4 = read_cr4();
-	printf("cr4 = 0x%016lx\n", cr4);
+	debug_printf("cr4 = 0x%016lx\n", cr4);
 	cr4 |= (1 << 9);
 	cr4 |= (1 << 10);
-	printf("cr4 = 0x%016lx\n", cr4);
+	debug_printf("cr4 = 0x%016lx\n", cr4);
 	write_cr4(cr4);
 
 	/* Test SSE instruction, it will #UD if SSE is not properly set up */
@@ -184,12 +199,16 @@ int main(int argc, char **argv)
 	}
 
 	/* Check and setup */
+#ifdef NVRAM_COVERT_DEBUG_PRINT
 	report(true, "NVRAM covert channel boot up.");
 	report(this_cpu_has(X86_FEATURE_RDRAND), "CPU has rdrand feature");
 	report(this_cpu_has(X86_FEATURE_RDTSCP), "CPU has rdtscp feature");
 	report(test_print_chasing_help(),
 	       "Print chasing microbenchmark help message");
 	report(check_and_set_up_sse(), "Set up SSE extension");
+#else
+	check_and_set_up_sse();
+#endif /* NVRAM_COVERT_DEBUG_PRINT */
 
 	/* Init chasing index */
 	init_chasing_index(ci.cindex, ci.region_size / ci.block_size);

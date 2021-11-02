@@ -19,13 +19,7 @@
 #define CHASING_H
 
 #include "libcflat.h"
-
-#ifndef kr_info
-#define kr_info(string, args...)                                               \
-	do {                                                                   \
-		printf(string "\n", ##args);                                   \
-	} while (0)
-#endif
+#include "print_info.h"
 
 #ifndef KERNEL_BEGIN
 #define KERNEL_BEGIN                                                           \
@@ -237,9 +231,7 @@
 #define CHASING_PER_BLOCK_TIMING_END(TIMING_BUF)		"\n"
 
 #define TIMING_BUF_INIT(timing_buf)                                            \
-	for (ti = 0; ti < repeat * 4; ti++) {                                  \
-		timing_buf[ti] = 0;                                            \
-	}
+	do {} while(0);
 
 #define CHASING_PRINT_RECORD_TIMING_BASE(prefix, timing_buf, cnt, base)        \
 	for (ti = 0; ti < cnt; ti++) {                                         \
