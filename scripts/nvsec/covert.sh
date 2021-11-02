@@ -73,6 +73,9 @@ flush_after_load_array=(1)
 record_timing_array=(1) # 1: per_reapeat
 flush_l1_array=(0)
 receiver_page_offset_array=($(seq -s ' ' 0 255))
+
+covert_chasing_store=0
+covert_chasing_load=1
 iter_cycle_ddl_base=70000
 
 function run_qemu() {
@@ -119,7 +122,9 @@ function bench_func_inner() {
 										-DCHASING_FENCE_FREQ_ID="$fence_freq" \
 										-DCHASING_FLUSH_AFTER_LOAD="$flush_after_load" \
 										-DCHASING_RECORD_TIMING="$record_timing" \
-										-DCHASING_FLUSH_L1="$flush_l1"
+										-DCHASING_FLUSH_L1="$flush_l1" \
+										-DCOVERT_CHASING_STORE="$covert_chasing_store" \
+										-DCOVERT_CHASING_LOAD="$covert_chasing_load"
 									EOF
 									)
 									NVSEC_MAKE_ARGS="$(echo "$NVSEC_MAKE_ARGS" | tr -s '\t')"
@@ -261,6 +266,19 @@ debug_single)
 	flush_after_load_array=(1)
 	receiver_page_offset_array=(0)
 	covert_fid_array=(10)
+	export no_slack=1
+	batch_result_dir="results/${job}/${batch_id}"
+	bench_func
+	;;
+debug_small)
+	region_array=($((2 ** 12)))
+	stride_array=($((2 ** 21)))
+	flush_l1_array=(0)
+	repeat_array=(16)
+	iter_cycle_ddl_base=$((70000))
+	flush_after_load_array=(1)
+	receiver_page_offset_array=($(seq -s ' ' 0 15))
+	covert_fid_array=(2)
 	export no_slack=1
 	batch_result_dir="results/${job}/${batch_id}"
 	bench_func

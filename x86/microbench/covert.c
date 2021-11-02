@@ -81,18 +81,12 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 
 	switch (ci->role_type) {
 	case 0: // sender
-		// send 64 bits
-		// kr_info("send_data_buffer=%p, total_data_bits=%lu\n",
-		// 	ci->send_data, ci->total_data_bits);
-
 		for (i = 0; i < ci->total_data_bits; i++) {
 			cycle_beg = rdtscp(&cycle_aux);
 			asm volatile("mfence");
 			cr = &ci->result[i];
 			timing = cr->timing + i * (ci->repeat * 4);
 			CURR_DATA(curr_data, i);
-			// kr_info("Waiting to send bit_id=%ld, bit_data=%lu\n", i,
-			// 	curr_data);
 			cycle_timing_init_beg = rdtscp(&cycle_aux);
 			asm volatile("mfence");
 			TIMING_BUF_INIT(timing);
@@ -105,23 +99,27 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 			} else {
 				covert_channel = bit_1_channel;
 			}
-			// kr_info("Send bit_data=%1lu, bit_id=%lu, channel=%p\n",
-			// 	curr_data, i, covert_channel);
 
 			PC_BEFORE_WRITE
-			// chasing_func_list[ci->chasing_func_index].st_func(
-			// 	covert_channel, ci->region_size,
-			// 	ci->strided_size, ci->region_skip, ci->count,
-			// 	ci->repeat, ci->cindex,
-			// 	timing);
+#if COVERT_CHASING_STORE == 1
+			chasing_func_list[ci->chasing_func_index].st_func(
+				covert_channel, ci->region_size,
+				ci->strided_size, ci->region_skip, ci->count,
+				ci->repeat, ci->cindex,
+				timing);
+#endif
+			asm volatile("mfence \n" :::);
 			CLEAR_CPU_PIPELINE();
 			PC_BEFORE_READ
+#if COVERT_CHASING_LOAD == 1
 			chasing_func_list[ci->chasing_func_index].ld_func(
 				covert_channel, ci->region_size,
 				ci->strided_size, ci->region_skip, ci->count,
 				ci->repeat, ci->cindex,
 				timing + repeat * 2);
+#endif
 			asm volatile("mfence \n" :::);
+			CLEAR_CPU_PIPELINE();
 			PC_AFTER_READ
 
 			cycle_end = rdtscp(&cycle_aux);
@@ -130,23 +128,11 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 			cycle_ddl_end = wait_until_ddl(cycle_beg, cycle_end, ci->iter_cycle_ddl);
 			asm volatile("mfence");
 
-			// COVERT_PC_STRIDED_PRINT_MEASUREMENT(
-			// 	chasing_func_list[ci->chasing_func_index]);
-			// kr_info("[%s] ",
-			// 	chasing_func_list[ci->chasing_func_index].name);
-			// CHASING_PRINT_RECORD_TIMING("lat_st", (timing));
-			// kr_info("[%s] ",
-			// 	chasing_func_list[ci->chasing_func_index].name);
-			// CHASING_PRINT_RECORD_TIMING("lat_ld",
-			// 			    (timing + repeat * 2));
-			// kr_info("\n");
 			CLEAR_CPU_PIPELINE();
 			cycle_stats_end = rdtscp(&cycle_aux);
 			asm volatile("mfence");
 
 			RECORD_CYCLES(cr);
-
-			// kr_info("\n");
 		}
 		break;
 	case 1: // receiver
@@ -160,7 +146,6 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 			asm volatile("mfence");
 			cr = &ci->result[i];
 			timing = cr->timing + i * (ci->repeat * 4);
-			// kr_info("Waiting to receive bit_id=%ld\n", i);
 			
 			cycle_timing_init_beg = rdtscp(&cycle_aux);
 			asm volatile("mfence");
@@ -172,23 +157,26 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 			/* KEEP IN SYNC WITH _print function */
 			covert_channel = bit_0_channel;
 
-			// kr_info("Recv bit_id=%lu, channel=%p\n", i,
-				// covert_channel);
-
 			PC_BEFORE_WRITE
-			// chasing_func_list[ci->chasing_func_index].st_func(
-			// 	covert_channel, ci->region_size,
-			// 	ci->strided_size, ci->region_skip, ci->count,
-			// 	ci->repeat, ci->cindex,
-			// 	timing);
+#if COVERT_CHASING_STORE == 1
+			chasing_func_list[ci->chasing_func_index].st_func(
+				covert_channel, ci->region_size,
+				ci->strided_size, ci->region_skip, ci->count,
+				ci->repeat, ci->cindex,
+				timing);
+#endif
+			asm volatile("mfence \n" :::);
 			CLEAR_CPU_PIPELINE();
 			PC_BEFORE_READ
+#if COVERT_CHASING_LOAD == 1
 			chasing_func_list[ci->chasing_func_index].ld_func(
 				covert_channel, ci->region_size,
 				ci->strided_size, ci->region_skip, ci->count,
 				ci->repeat, ci->cindex,
 				timing + repeat * 2);
+#endif
 			asm volatile("mfence \n" :::);
+			CLEAR_CPU_PIPELINE();
 			PC_AFTER_READ
 
 			cycle_end = rdtscp(&cycle_aux);
@@ -196,23 +184,11 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 
 			cycle_ddl_end = wait_until_ddl(cycle_beg, cycle_end, ci->iter_cycle_ddl);
 
-			// COVERT_PC_STRIDED_PRINT_MEASUREMENT(
-			// 	chasing_func_list[ci->chasing_func_index]);
-			// kr_info("[%s] ",
-			// 	chasing_func_list[ci->chasing_func_index].name);
-			// CHASING_PRINT_RECORD_TIMING("lat_st", (timing));
-			// kr_info("[%s] ",
-			// 	chasing_func_list[ci->chasing_func_index].name);
-			// CHASING_PRINT_RECORD_TIMING("lat_ld",
-			// 			    (timing + repeat * 2));
-			// kr_info("\n");
 			CLEAR_CPU_PIPELINE();
 			cycle_stats_end = rdtscp(&cycle_aux);
 			asm volatile("mfence");
 
 			RECORD_CYCLES(cr);
-
-			// kr_info("\n");
 		}
 		break;
 	default:
