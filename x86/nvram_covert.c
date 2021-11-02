@@ -43,6 +43,9 @@ enum { max_send_data_bytes = 8 * 1024 * 1024,
 
 static bool init_covert_info(int argc, char **argv)
 {
+	uint32_t cycle_aux;
+	ci.cycle_global_beg = rdtscp(&cycle_aux);
+
 	/* TODO: Change to use getenv instead of args */
 
 	if (argc != total_args + 1) {
@@ -160,6 +163,7 @@ static void covert_channel(void)
 		print_covert_data();
 	}
 	covert_ptr_chasing_load_only(&ci);
+	covert_ptr_chasing_print(&ci);
 }
 
 static bool check_and_set_up_sse(void)

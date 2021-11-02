@@ -55,6 +55,7 @@ typedef struct {
 	uint64_t *timing;		/* Hard code */
 
 	/* Result */
+	cycle_t cycle_global_beg;	/* Generated */
 	covert_result_t *result;	/* Generated */
 } covert_info_t;
 

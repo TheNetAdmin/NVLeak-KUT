@@ -78,19 +78,21 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 		ci->region_skip, ci->count, ci->repeat, ci->cindex, ci->timing);
 	asm volatile("mfence \n" :::);
 
+	memset(ci->timing, 0, sizeof(uint64_t) * (ci->repeat * 4));
+
 	switch (ci->role_type) {
 	case 0: // sender
 		// send 64 bits
-		kr_info("send_data_buffer=%p, total_data_bits=%lu\n",
-			ci->send_data, ci->total_data_bits);
+		// kr_info("send_data_buffer=%p, total_data_bits=%lu\n",
+		// 	ci->send_data, ci->total_data_bits);
 
 		for (i = 0; i < ci->total_data_bits; i++) {
 			cycle_beg = rdtscp(&cycle_aux);
 			cr = &ci->result[i];
 			timing = cr->timing;
 			CURR_DATA(curr_data, i);
-			kr_info("Waiting to send bit_id=%ld, bit_data=%lu\n", i,
-				curr_data);
+			// kr_info("Waiting to send bit_id=%ld, bit_data=%lu\n", i,
+			// 	curr_data);
 			cycle_timing_init_beg = rdtscp(&cycle_aux);
 			TIMING_BUF_INIT(timing);
 			cycle_timing_init_end = rdtscp(&cycle_aux);
@@ -100,8 +102,8 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 			} else {
 				covert_channel = bit_1_channel;
 			}
-			kr_info("Send bit_data=%1lu, bit_id=%lu, channel=%p\n",
-				curr_data, i, covert_channel);
+			// kr_info("Send bit_data=%1lu, bit_id=%lu, channel=%p\n",
+			// 	curr_data, i, covert_channel);
 
 			PC_BEFORE_WRITE
 			// chasing_func_list[ci->chasing_func_index].st_func(
@@ -150,7 +152,7 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 			cycle_beg = rdtscp(&cycle_aux);
 			cr = &ci->result[i];
 			timing = cr->timing;
-			kr_info("Waiting to receive bit_id=%ld\n", i);
+			// kr_info("Waiting to receive bit_id=%ld\n", i);
 			
 			cycle_timing_init_beg = rdtscp(&cycle_aux);
 			TIMING_BUF_INIT(timing);
@@ -159,8 +161,8 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 			/* KEEP IN SYNC WITH _print function */
 			covert_channel = bit_0_channel;
 
-			kr_info("Recv bit_id=%lu, channel=%p\n", i,
-				covert_channel);
+			// kr_info("Recv bit_id=%lu, channel=%p\n", i,
+				// covert_channel);
 
 			PC_BEFORE_WRITE
 			// chasing_func_list[ci->chasing_func_index].st_func(

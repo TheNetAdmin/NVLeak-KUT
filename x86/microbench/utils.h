@@ -77,6 +77,8 @@
 
 #define PRINT_CYCLES(cr, ci)                                                   \
 	printf("Cycle stats:\n");                                              \
+	printf(" [-1] cycle_all_beg        : %10lu : %10lu\n",                 \
+	       cr->cycle_all_beg, cr->cycle_all_beg - ci->cycle_global_beg);   \
 	printf("  [0] cycle_beg            : %10lu : %10lu\n",                 \
 	       cr->cycle_beg - cr->cycle_all_beg,                              \
 	       cr->cycle_beg - cr->cycle_all_beg);                             \

@@ -58,9 +58,9 @@ region_array=(
 	# $((2 **  8))
 	# $((2 **  9))
 	# $(seq -s ' ' $((2 ** 9)) $((2 ** 6)) $((2 ** 10 - 1)))
-	$((2 ** 10)) # 16 * 64 --> 16 blocks --> 16 way
+	# $((2 ** 10)) # 16 * 64 --> 16 blocks --> 16 way
 	# $((2 ** 11))
-	# $((2 ** 12))
+	$((2 ** 12))
 	# $((2 ** 13))
 )
 sub_op_array=(1) # Covert channel: Pointer chasing read only
@@ -253,8 +253,8 @@ debug)
 	bench_func
 	;;
 debug_single)
-	region_array=($((2 ** 10)))
-	stride_array=($((2 ** 20)))
+	region_array=($((2 ** 12)))
+	stride_array=($((2 ** 21)))
 	flush_l1_array=(0)
 	repeat_array=(16)
 	flush_after_load_array=(0)
