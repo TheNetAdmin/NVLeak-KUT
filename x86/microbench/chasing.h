@@ -20,6 +20,7 @@
 
 #include "libcflat.h"
 #include "print_info.h"
+#include "covert_configs.h"
 
 #ifndef KERNEL_BEGIN
 #define KERNEL_BEGIN                                                           \
@@ -32,10 +33,6 @@
 
 #define CHASING_MFENCE   "mfence\n"
 #define CHASING_NO_FENCE "nop\n"
-
-#ifndef CHASING_FENCE_STRATEGY_ID
-#define CHASING_FENCE_STRATEGY_ID 0
-#endif
 
 #if CHASING_FENCE_STRATEGY_ID == 0
 #define CHASING_FENCE_STRATEGY "mfence"
@@ -55,9 +52,6 @@
 #define CHASING_LD_FENCE       "mfence\n"
 #endif
 
-#ifndef CHASING_FENCE_FREQ_ID
-#define CHASING_FENCE_FREQ_ID 0
-#endif
 
 #if CHASING_FENCE_FREQ_ID == 0
 #define CHASING_FENCE_FREQ "region"
@@ -77,10 +71,6 @@
 #define CHASING_LD_FENCE_BLOCK  CHASING_NO_FENCE
 #define CHASING_ST_FENCE_REGION CHASING_ST_FENCE
 #define CHASING_LD_FENCE_REGION CHASING_LD_FENCE
-#endif
-
-#ifndef CHASING_FLUSH_AFTER_LOAD
-#define CHASING_FLUSH_AFTER_LOAD 1
 #endif
 
 
@@ -104,9 +94,6 @@
  */
 
 
-#ifndef CHASING_FLUSH_L1
-#define CHASING_FLUSH_L1 0
-#endif
 
 #if CHASING_FLUSH_L1 == 0
 #define CHASING_FLUSH_L1_TYPE "none"
@@ -177,9 +164,6 @@
 #else
 #endif
 
-#ifndef CHASING_RECORD_TIMING
-#define CHASING_RECORD_TIMING 1
-#endif
 
 #if CHASING_RECORD_TIMING == 0
 #define CHASING_RECORD_TIMING_TYPE				"none"

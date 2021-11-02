@@ -3,6 +3,7 @@
 
 #include "libcflat.h"
 #include "print_info.h"
+#include "covert_configs.h"
 
 #define PC_VARS                                                                \
 	uint64_t     c_store_start;                                            \
@@ -165,8 +166,8 @@
 	kr_info("CHASING_FLUSH_AFTER_LOAD=%d\n", CHASING_FLUSH_AFTER_LOAD);    \
 	kr_info("CHASING_FLUSH_L1=%d\n", CHASING_FLUSH_L1);                    \
 	kr_info("CHASING_FLUSH_L1_TYPE=%s\n", CHASING_FLUSH_L1_TYPE);          \
-	kr_info("COVERT_CHASING_STORE=%s\n", COVERT_CHASING_STORE);            \
-	kr_info("COVERT_CHASING_LOAD=%s\n", COVERT_CHASING_LOAD); 
+	kr_info("COVERT_CHASING_STORE=%d\n", COVERT_CHASING_STORE);            \
+	kr_info("COVERT_CHASING_LOAD=%d\n", COVERT_CHASING_LOAD); 
 
 
 #define CLEAR_CPU_PIPELINE()                                                   \
