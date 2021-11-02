@@ -242,12 +242,12 @@ case $job in
 debug)
 	region_array=($((2 ** 11)))
 	stride_array=($((2 ** 20)))
-	flush_l1_array=(0)
-	repeat_array=(16)
+	flush_l1_array=(1)
+	repeat_array=(1)
 	iter_cycle_ddl=$((16 * 50000))
 	flush_after_load_array=(1)
 	receiver_page_offset_array=(0 1 2 3)
-	covert_fid_array=(20 21)
+	covert_fid_array=(2)
 	export no_slack=1
 	batch_result_dir="results/${job}/${batch_id}"
 	bench_func

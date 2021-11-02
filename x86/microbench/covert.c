@@ -4,20 +4,21 @@
 #include "libcflat.h"
 #include "processor.h"
 
-static inline void wait_until_ddl(uint64_t cycle_beg, uint64_t cycle_end,
+static inline uint64_t wait_until_ddl(uint64_t cycle_beg, uint64_t cycle_end,
 				  uint64_t cycle_ddl)
 {
+	u32		   aux;
+	unsigned long long cycle_cur;
+
 	/* Target ddl */
 	uint64_t cycle_tgt = cycle_beg + cycle_ddl;
 
 	if (cycle_end > cycle_tgt) {
 		printf("WARNING: iter_cycle_end [%lu] exceeds iter_cycle_ddl [%lu], skipping wait\n",
 		       cycle_end, cycle_tgt);
-		return;
+		return rdtscp(&aux);
 	}
 
-	u32		   aux;
-	unsigned long long cycle_cur;
 	do {
 		/* 1024 cycle granularity */
 		for (int i = 0; i < 1024 / 16; i++) {
@@ -29,7 +30,7 @@ static inline void wait_until_ddl(uint64_t cycle_beg, uint64_t cycle_end,
 		cycle_cur = rdtscp(&aux);
 	} while (cycle_cur < cycle_tgt);
 
-	printf("ddl_reached_cycle=%llu\n", cycle_cur);
+	return rdtscp(&aux);
 }
 
 void covert_ptr_chasing_load_only(covert_info_t *ci)
@@ -47,6 +48,9 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 
 	uint64_t cycle_all_beg;
 	uint64_t cycle_beg, cycle_end;
+	uint64_t cycle_timing_init_beg, cycle_timing_init_end;
+	uint64_t cycle_ddl_end;
+	uint64_t cycle_stats_end;
 	uint32_t cycle_aux;
 
 	cycle_all_beg = rdtscp(&cycle_aux);
@@ -57,7 +61,6 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 	 *       - receiver fill same set with 16 other blocks
 	 */
 	kr_info("covert_strategy=ptr_chasing_load_only\n");
-
 
 	/* Print macros */
 	printf("CHASING_FENCE_STRATEGY_ID=%d\n", CHASING_FENCE_STRATEGY_ID);
@@ -89,7 +92,9 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 			CURR_DATA(curr_data, i);
 			kr_info("Waiting to send bit_id=%ld, bit_data=%lu\n", i,
 				curr_data);
+			cycle_timing_init_beg = rdtscp(&cycle_aux);
 			TIMING_BUF_INIT(timing);
+			cycle_timing_init_end = rdtscp(&cycle_aux);
 			if (curr_data == 0x0) {
 				covert_channel = bit_0_channel;
 			} else {
@@ -115,7 +120,7 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 
 			cycle_end = rdtscp(&cycle_aux);
 
-			wait_until_ddl(cycle_beg, cycle_end, ci->iter_cycle_ddl);
+			cycle_ddl_end = wait_until_ddl(cycle_beg, cycle_end, ci->iter_cycle_ddl);
 
 			COVERT_PC_STRIDED_PRINT_MEASUREMENT(
 				chasing_func_list[ci->chasing_func_index]);
@@ -126,6 +131,12 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 				chasing_func_list[ci->chasing_func_index].name);
 			CHASING_PRINT_RECORD_TIMING("lat_ld",
 						    (ci->timing + repeat * 2));
+			kr_info("\n");
+			
+			cycle_stats_end = rdtscp(&cycle_aux);
+
+			PRINT_CYCLES()
+
 			kr_info("\n");
 		}
 		break;
@@ -138,7 +149,10 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 		for (i = 0; i < ci->total_data_bits; i++) {
 			cycle_beg = rdtscp(&cycle_aux);
 			kr_info("Waiting to receive bit_id=%ld\n", i);
+			
+			cycle_timing_init_beg = rdtscp(&cycle_aux);
 			TIMING_BUF_INIT(timing);
+			cycle_timing_init_end = rdtscp(&cycle_aux);
 
 			covert_channel = bit_0_channel;
 
@@ -162,7 +176,7 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 
 			cycle_end = rdtscp(&cycle_aux);
 
-			wait_until_ddl(cycle_beg, cycle_end, ci->iter_cycle_ddl);
+			cycle_ddl_end = wait_until_ddl(cycle_beg, cycle_end, ci->iter_cycle_ddl);
 
 			COVERT_PC_STRIDED_PRINT_MEASUREMENT(
 				chasing_func_list[ci->chasing_func_index]);
@@ -173,6 +187,12 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 				chasing_func_list[ci->chasing_func_index].name);
 			CHASING_PRINT_RECORD_TIMING("lat_ld",
 						    (ci->timing + repeat * 2));
+			kr_info("\n");
+			
+			cycle_stats_end = rdtscp(&cycle_aux);
+
+			PRINT_CYCLES()
+
 			kr_info("\n");
 		}
 		break;

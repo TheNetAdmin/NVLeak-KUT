@@ -96,6 +96,18 @@
 		cycle_beg - cycle_all_beg                                      \
 		);
 
+#define PRINT_CYCLES() \
+	printf("Cycle stats:\n"); \
+	printf("  [0] cycle_beg            : %10lu : %10lu\n", cycle_beg - cycle_all_beg, cycle_beg - cycle_all_beg); \
+	printf("  [1] cycle_timing_init_beg: %10lu : %10lu\n", cycle_timing_init_beg - cycle_all_beg, cycle_timing_init_beg - cycle_beg); \
+	printf("  [2] cycle_timing_init_end: %10lu : %10lu\n", cycle_timing_init_end - cycle_all_beg, cycle_timing_init_end - cycle_timing_init_beg); \
+	printf("  [3] cycle_store_beg      : %10lu : %10lu\n", c_store_start - cycle_all_beg, c_store_start - cycle_timing_init_end); \
+	printf("  [4] cycle_load_beg       : %10lu : %10lu\n", c_load_start - cycle_all_beg, c_load_start - c_store_start); \
+	printf("  [5] cycle_load_end       : %10lu : %10lu\n", c_load_end - cycle_all_beg, c_load_end - c_load_start); \
+	printf("  [6] cycle_end            : %10lu : %10lu\n", cycle_end - cycle_all_beg, cycle_end - c_load_end); \
+	printf("  [7] cycle_ddl_end        : %10lu : %10lu\n", cycle_ddl_end - cycle_all_beg, cycle_ddl_end - cycle_end); \
+	printf("  [8] cycle_stats_end      : %10lu : %10lu\n", cycle_stats_end - cycle_all_beg, cycle_stats_end - cycle_ddl_end);
+
 #define PRINT_COVERT_INFO(ci)                                                  \
 	kr_info("buf_addr %p\n", ci->buf);                                     \
 	kr_info("role_type=%u, "                                               \
