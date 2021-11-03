@@ -88,6 +88,21 @@
 	"clflushopt	(64 * (" #cl_index "))(%%r9, %%r12)\n"
 #endif
 
+
+#if CHASING_FLUSH_AFTER_STORE == 0
+#define CHASING_FLUSH_AFTER_STORE_TYPE "none"
+#define CHASING_STORE_FLUSH(cl_index)					       \
+	"\n"
+#elif CHASING_FLUSH_AFTER_STORE == 1
+#define CHASING_FLUSH_AFTER_STORE_TYPE "clflush"
+#define CHASING_STORE_FLUSH(cl_index)					       \
+	"clflush	(64 * (" #cl_index "))(%%r9, %%r12)\n"
+#else
+#define CHASING_FLUSH_AFTER_STORE_TYPE "clflushopt"
+#define CHASING_STORE_FLUSH(cl_index)					       \
+	"clflushopt	(64 * (" #cl_index "))(%%r9, %%r12)\n"
+#endif
+
 /* TIMING_BUF:
  *   0  : temp timing (e.g. beging timing used in latency calc)
  *   1..: latency from round 0..
@@ -291,11 +306,12 @@
  * `../scripts/code/expand_macro.sh chasing.h` to view macro expansion results.
  */
 #define CHASING_ST_64_AVX(cl_index)                                            \
-	"movntdq	%%xmm0, (64 * (" #cl_index "))(%%r9, %%r12)\n"
-	/* "clflush	(64 * (" #cl_index "))(%%r9, %%r12)\n" */
+	"movntdq	%%xmm0, (64 * (" #cl_index "))(%%r9, %%r12)\n"         \
+	CHASING_STORE_FLUSH(cl_index)
 
 #define CHASING_ST_8_REG(cl_index)                                             \
-	"movnt          %%r13, (64 * (" #cl_index "))(%%r9, %%r12)\n"
+	"movnt          %%r13, (64 * (" #cl_index "))(%%r9, %%r12)\n"          \
+	CHASING_STORE_FLUSH(cl_index)
 
 #define CHASING_ST_8(cl_base)                                                  \
 	CHASING_ST_8_REG(cl_base)
@@ -665,6 +681,7 @@ typedef struct chasing_func_entry {
 	const char *fence_strategy;
 	const char *fence_freq;
 	const char *flush_after_load;
+	const char *flush_after_store;
 	const char *flush_l1;
 	const char *record_timing;
 	uint64_t block_size;
@@ -679,6 +696,7 @@ typedef struct chasing_func_entry {
 	.fence_strategy   = CHASING_FENCE_STRATEGY,                            \
 	.fence_freq       = CHASING_FENCE_FREQ,                                \
 	.flush_after_load = CHASING_FLUSH_AFTER_LOAD_TYPE,                     \
+	.flush_after_store= CHASING_FLUSH_AFTER_STORE_TYPE,                    \
 	.flush_l1         = CHASING_FLUSH_L1_TYPE,                             \
 	.record_timing    = CHASING_RECORD_TIMING_TYPE,                        \
 	.block_size       = size,                                              \

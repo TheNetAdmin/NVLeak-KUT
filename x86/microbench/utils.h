@@ -31,49 +31,48 @@
 		c_load_start, c_load_end, meta.fence_strategy,                 \
 		meta.fence_freq);
 
-#define PC_STRIDED_PRINT_MEASUREMENT(meta)                                     \
-	kr_info("buf_addr %p\n", buf);                                         \
-	kr_info("[%s] region_size=%lu, block_size=%lu, region_skip=%lu, "      \
-		"stride_size=%lu, count=%lu, "                                 \
-		"cycle=%ld:%ld:%ld, fence_strategy=%s, fence_freq=%s, "        \
-		"repeat=%lu, region_align=%lu, "                       \
-		"flush_after_load=%s, flush_l1=%s, record_timing=%s",          \
-		meta.name, region_size, block_size, region_skip, strided_size, \
-		count, c_store_start, c_load_start, c_load_end,                \
-		meta.fence_strategy, meta.fence_freq, repeat,              \
-		region_align, meta.flush_after_load, meta.flush_l1,            \
+#define PC_STRIDED_PRINT_MEASUREMENT(meta)                                                  \
+	kr_info("buf_addr %p\n", buf);                                                      \
+	kr_info("[%s] region_size=%lu, block_size=%lu, region_skip=%lu, "                   \
+		"stride_size=%lu, count=%lu, "                                              \
+		"cycle=%ld:%ld:%ld, fence_strategy=%s, fence_freq=%s, "                     \
+		"repeat=%lu, region_align=%lu, "                                            \
+		"flush_after_load=%s, flush_after_store=%s, flush_l1=%s, record_timing=%s", \
+		meta.name, region_size, block_size, region_skip, strided_size,              \
+		count, c_store_start, c_load_start, c_load_end,                             \
+		meta.fence_strategy, meta.fence_freq, repeat, region_align,                 \
+		meta.flush_after_load, meta.flush_after_store, meta.flush_l1,               \
 		meta.record_timing);
 
-#define COVERT_PC_STRIDED_PRINT_MEASUREMENT(meta)                              \
-	kr_info("buf_addr %p\n", ci->buf);                                     \
-	kr_info("[%s] region_size=%lu, block_size=%lu, region_skip=%lu, "      \
-		"stride_size=%lu, count=%lu, "                                 \
-		"cycle=%ld:%ld:%ld, fence_strategy=%s, fence_freq=%s, "        \
-		"repeat=%lu, region_align=%lu, "                               \
-		"flush_after_load=%s, flush_l1=%s, record_timing=%s, "         \
-		"total_cycle=%lu, cycle_beg_since_all_beg=%lu",                \
-		meta.name, ci->region_size, ci->block_size, ci->region_skip,   \
-		ci->strided_size, ci->count, c_store_start, c_load_start,      \
-		c_load_end, meta.fence_strategy, meta.fence_freq, ci->repeat,  \
-		ci->region_align, meta.flush_after_load,                       \
-		meta.flush_l1, meta.record_timing, cycle_end - cycle_beg,      \
-		cycle_beg - cycle_all_beg                                      \
-		);
+#define COVERT_PC_STRIDED_PRINT_MEASUREMENT(meta)                                            \
+	kr_info("buf_addr %p\n", ci->buf);                                                   \
+	kr_info("[%s] region_size=%lu, block_size=%lu, region_skip=%lu, "                    \
+		"stride_size=%lu, count=%lu, "                                               \
+		"cycle=%ld:%ld:%ld, fence_strategy=%s, fence_freq=%s, "                      \
+		"repeat=%lu, region_align=%lu, "                                             \
+		"flush_after_load=%s, flush_after_store=%s, flush_l1=%s, record_timing=%s, " \
+		"total_cycle=%lu, cycle_beg_since_all_beg=%lu",                              \
+		meta.name, ci->region_size, ci->block_size, ci->region_skip,                 \
+		ci->strided_size, ci->count, c_store_start, c_load_start,                    \
+		c_load_end, meta.fence_strategy, meta.fence_freq, ci->repeat,                \
+		ci->region_align, meta.flush_after_load,                                     \
+		meta.flush_after_store, meta.flush_l1, meta.record_timing,                   \
+		cycle_end - cycle_beg, cycle_beg - cycle_all_beg);
 
-#define COVERT_PC_STRIDED_PRINT_MEASUREMENT_CR(meta, cr)                       \
-	kr_info("buf_addr %p\n", ci->buf);                                     \
-	kr_info("[%s] region_size=%lu, block_size=%lu, region_skip=%lu, "      \
-		"stride_size=%lu, count=%lu, "                                 \
-		"cycle=%ld:%ld:%ld, fence_strategy=%s, fence_freq=%s, "        \
-		"repeat=%lu, region_align=%lu, "                               \
-		"flush_after_load=%s, flush_l1=%s, record_timing=%s, "         \
-		"total_cycle=%lu, cycle_beg_since_all_beg=%lu",                \
-		meta.name, ci->region_size, ci->block_size, ci->region_skip,   \
-		ci->strided_size, ci->count, cr->c_store_start,                \
-		cr->c_load_start, cr->c_load_end, meta.fence_strategy,         \
-		meta.fence_freq, ci->repeat, ci->region_align,                 \
-		meta.flush_after_load, meta.flush_l1, meta.record_timing,      \
-		cr->cycle_end - cr->cycle_beg,                                 \
+#define COVERT_PC_STRIDED_PRINT_MEASUREMENT_CR(meta, cr)                                     \
+	kr_info("buf_addr %p\n", ci->buf);                                                   \
+	kr_info("[%s] region_size=%lu, block_size=%lu, region_skip=%lu, "                    \
+		"stride_size=%lu, count=%lu, "                                               \
+		"cycle=%ld:%ld:%ld, fence_strategy=%s, fence_freq=%s, "                      \
+		"repeat=%lu, region_align=%lu, "                                             \
+		"flush_after_load=%s, flush_after_store=%s, flush_l1=%s, record_timing=%s, " \
+		"total_cycle=%lu, cycle_beg_since_all_beg=%lu",                              \
+		meta.name, ci->region_size, ci->block_size, ci->region_skip,                 \
+		ci->strided_size, ci->count, cr->c_store_start,                              \
+		cr->c_load_start, cr->c_load_end, meta.fence_strategy,                       \
+		meta.fence_freq, ci->repeat, ci->region_align,                               \
+		meta.flush_after_load, meta.flush_after_store, meta.flush_l1,                \
+		meta.record_timing, cr->cycle_end - cr->cycle_beg,                           \
 		cr->cycle_beg - cr->cycle_all_beg);
 
 #define PRINT_CYCLES(cr, ci)                                                   \
@@ -164,6 +163,7 @@
 	kr_info("CHASING_FENCE_STRATEGY_ID=%d\n", CHASING_FENCE_STRATEGY_ID);  \
 	kr_info("CHASING_FENCE_FREQ_ID=%d\n", CHASING_FENCE_FREQ_ID);          \
 	kr_info("CHASING_FLUSH_AFTER_LOAD=%d\n", CHASING_FLUSH_AFTER_LOAD);    \
+	kr_info("CHASING_FLUSH_AFTER_STORE=%d\n", CHASING_FLUSH_AFTER_STORE);  \
 	kr_info("CHASING_FLUSH_L1=%d\n", CHASING_FLUSH_L1);                    \
 	kr_info("CHASING_FLUSH_L1_TYPE=%s\n", CHASING_FLUSH_L1_TYPE);          \
 	kr_info("COVERT_CHASING_STORE=%d\n", COVERT_CHASING_STORE);            \

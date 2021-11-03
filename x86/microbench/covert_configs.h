@@ -14,6 +14,10 @@
 #define CHASING_FLUSH_AFTER_LOAD 1
 #endif
 
+#ifndef CHASING_FLUSH_AFTER_STORE
+#define CHASING_FLUSH_AFTER_STORE 1
+#endif
+
 #ifndef CHASING_FLUSH_L1
 #define CHASING_FLUSH_L1 0
 #endif

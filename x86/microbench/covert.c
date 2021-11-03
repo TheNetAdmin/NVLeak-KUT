@@ -298,10 +298,10 @@ void vanilla_ptr_chasing(covert_info_t *ci)
 	unsigned int chasing_func_index;
 	PC_VARS;
 
-	size_t ti;
-	uint64_t *timing	= ci->timing;
-	uint64_t repeat = ci->repeat;
-	
+	size_t	  ti;
+	uint64_t *timing = ci->timing;
+	uint64_t  repeat = ci->repeat;
+
 	uint64_t cycle_all_beg;
 	uint64_t cycle_beg, cycle_end;
 	uint64_t cycle_timing_init_beg, cycle_timing_init_end;

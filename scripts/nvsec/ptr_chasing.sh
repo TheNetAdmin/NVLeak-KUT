@@ -46,6 +46,7 @@ stride_array=(
     # RMB Buffer 16KB --> 256B Entry Size --> 16KB/256B = 64 Entries
     # 16KB / 1 or 2 or 4 or 8 or 16 or ... 64
     # The below AIT Buffer covers 16KB/1 and 16KB/2 and 16KB/4
+	$((2 ** 6))
     $((2 ** 8))
     $(seq -s ' ' $((2 ** 9)) $((2 ** 9)) $((2 ** 12 - 1))) # [512B,    4KB) per  512B -> 7
 
@@ -86,7 +87,7 @@ region_align=4096
 
 fence_strategy_array=(0)
 fence_freq_array=(1)
-flush_after_load_array=(0)
+flush_after_load_array=(1)
 record_timing_array=(1) # 1: per_reapeat
 flush_l1_array=(1)
 
