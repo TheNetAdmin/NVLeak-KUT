@@ -78,33 +78,33 @@
 
 #define PRINT_CYCLES(cr, ci)                                                   \
 	printf("Cycle stats:\n");                                              \
-	printf(" [-1] cycle_all_beg        : %10lu : %10lu\n",                 \
+	printf("  [0] cycle_all_beg        : %10lu : %10lu\n",                 \
 	       cr->cycle_all_beg, cr->cycle_all_beg - ci->cycle_global_beg);   \
-	printf("  [0] cycle_beg            : %10lu : %10lu\n",                 \
+	printf("  [1] cycle_beg            : %10lu : %10lu\n",                 \
 	       cr->cycle_beg - cr->cycle_all_beg,                              \
-	       cr->cycle_beg - cr->cycle_all_beg);                             \
-	printf("  [1] cycle_timing_init_beg: %10lu : %10lu\n",                 \
+	       cr->cycle_beg - cr->cycle_beg);                                 \
+	printf("  [2] cycle_timing_init_beg: %10lu : %10lu\n",                 \
 	       cr->cycle_timing_init_beg - cr->cycle_all_beg,                  \
 	       cr->cycle_timing_init_beg - cr->cycle_beg);                     \
-	printf("  [2] cycle_timing_init_end: %10lu : %10lu\n",                 \
+	printf("  [3] cycle_timing_init_end: %10lu : %10lu\n",                 \
 	       cr->cycle_timing_init_end - cr->cycle_all_beg,                  \
 	       cr->cycle_timing_init_end - cr->cycle_timing_init_beg);         \
-	printf("  [3] cycle_store_beg      : %10lu : %10lu\n",                 \
+	printf("  [4] cycle_store_beg      : %10lu : %10lu\n",                 \
 	       cr->c_store_start - cr->cycle_all_beg,                          \
 	       cr->c_store_start - cr->cycle_timing_init_end);                 \
-	printf("  [4] cycle_load_beg       : %10lu : %10lu\n",                 \
+	printf("  [5] cycle_load_beg       : %10lu : %10lu\n",                 \
 	       cr->c_load_start - cr->cycle_all_beg,                           \
 	       cr->c_load_start - cr->c_store_start);                          \
-	printf("  [5] cycle_load_end       : %10lu : %10lu\n",                 \
+	printf("  [6] cycle_load_end       : %10lu : %10lu\n",                 \
 	       cr->c_load_end - cr->cycle_all_beg,                             \
 	       cr->c_load_end - cr->c_load_start);                             \
-	printf("  [6] cycle_end            : %10lu : %10lu\n",                 \
+	printf("  [7] cycle_end            : %10lu : %10lu\n",                 \
 	       cr->cycle_end - cr->cycle_all_beg,                              \
 	       cr->cycle_end - cr->c_load_end);                                \
-	printf("  [7] cycle_ddl_end        : %10lu : %10lu\n",                 \
+	printf("  [8] cycle_ddl_end        : %10lu : %10lu\n",                 \
 	       cr->cycle_ddl_end - cr->cycle_all_beg,                          \
 	       cr->cycle_ddl_end - cr->cycle_end);                             \
-	printf("  [8] cycle_stats_end      : %10lu : %10lu\n",                 \
+	printf("  [9] cycle_stats_end      : %10lu : %10lu\n",                 \
 	       cr->cycle_stats_end - cr->cycle_all_beg,                        \
 	       cr->cycle_stats_end - cr->cycle_ddl_end);                       \
 	if (cr->cycle_beg + ci->iter_cycle_ddl < cr->cycle_end) {              \

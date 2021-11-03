@@ -127,16 +127,24 @@ static bool init_covert_info(int argc, char **argv)
 	assert(ci.cindex);
 
 	size_t timing_per_bit_size = sizeof(uint64_t) * (ci.repeat * 4);
-	size_t timing_total_size = timing_per_bit_size * (ci.total_data_bits * 2);
-	ci.timing		 = (uint64_t *)malloc(timing_total_size);
-	assert(ci.timing);
-	memset(ci.timing, 0, timing_total_size);
+	if (ci.role_type == sender || ci.role_type == receiver) {
+		size_t timing_total_size = timing_per_bit_size * (ci.total_data_bits * 2);
+		ci.timing		 = (uint64_t *)malloc(timing_total_size);
+		assert(ci.timing);
+		memset(ci.timing, 0, timing_total_size);
 
-	ci.result = (covert_result_t *)malloc(sizeof(covert_result_t) *
-					      (ci.total_data_bits * 2));
-	assert(ci.result);
-	for (uint64_t i = 0; i < (ci.total_data_bits * 2); i++) {
-		ci.result[i].timing = ci.timing + i * (ci.repeat * 4);
+		ci.result = (covert_result_t *)malloc(sizeof(covert_result_t) *
+						(ci.total_data_bits * 2));
+		assert(ci.result);
+		for (uint64_t i = 0; i < (ci.total_data_bits * 2); i++) {
+			ci.result[i].timing = ci.timing + i * (ci.repeat * 4);
+		}
+	} else if (ci.role_type == vanilla) {
+		ci.timing = (uint64_t *)malloc(timing_per_bit_size);
+		assert(ci.timing);
+		ci.result = (covert_result_t *)malloc(sizeof(covert_result_t));
+		assert(ci.result);
+		ci.result->timing = ci.timing;
 	}
 
 	/* Print */

@@ -182,6 +182,7 @@ function bench_func_inner() {
 												"$region_align" \
 												"12345678" \
 												"$covert_fid" \
+												"1" \
 												> >(tee -a "${task_results_dir}/stdout.log" > /dev/null) \
 												2>&1 \
 											;
@@ -220,6 +221,30 @@ debug)
 	region_array=(64)
 	stride_array=(256)
 	flush_l1_array=(0 1)
+	export no_slack=1
+	batch_result_dir="results/vanilla/${job}/${batch_id}"
+	bench_func
+	;;
+debug_single)
+	region_array=(
+		$((2 ** 12))
+	)
+	stride_array=(64)
+	flush_l1_array=(1)
+	export no_slack=1
+	batch_result_dir="results/vanilla/${job}/${batch_id}"
+	bench_func
+	;;
+debug_small)
+	region_array=(
+		$((2 **  8)) $((2 **  9)) $((2 ** 10)) $((2 ** 11))
+		$((2 ** 12)) $((2 ** 13)) $((2 ** 14)) $((2 ** 15))
+		$((2 ** 16)) $((2 ** 17)) $((2 ** 18)) $((2 ** 19))
+		$((2 ** 20)) $((2 ** 21)) $((2 ** 22)) $((2 ** 23))
+		$((2 ** 24)) $((2 ** 25)) $((2 ** 26)) $((2 ** 27))
+	)
+	stride_array=(64)
+	flush_l1_array=(1)
 	export no_slack=1
 	batch_result_dir="results/vanilla/${job}/${batch_id}"
 	bench_func

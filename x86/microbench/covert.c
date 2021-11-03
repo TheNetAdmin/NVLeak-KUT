@@ -304,9 +304,18 @@ void vanilla_ptr_chasing(covert_info_t *ci)
 	
 	uint64_t cycle_all_beg;
 	uint64_t cycle_beg, cycle_end;
+	uint64_t cycle_timing_init_beg, cycle_timing_init_end;
+	uint64_t cycle_ddl_end;
+	uint64_t cycle_stats_end;
 	uint32_t cycle_aux;
 
+	covert_result_t *cr = ci->result;
+
 	cycle_all_beg = rdtscp(&cycle_aux);
+
+	kr_info("covert_strategy=vanilla_pointer_chasing\n");
+
+	PRINT_COVERT_INFO(ci);
 
 	/* find pointer chasing benchmark */
 	chasing_func_index = chasing_find_func(ci->block_size);
@@ -332,7 +341,14 @@ void vanilla_ptr_chasing(covert_info_t *ci)
 	cycle_beg = rdtscp(&cycle_aux);
 
 	/* Init timing buffer */
+	cycle_timing_init_beg = rdtscp(&cycle_aux);
+	asm volatile("mfence");
+	
 	TIMING_BUF_INIT(timing);
+	
+	CLEAR_CPU_PIPELINE();
+	cycle_timing_init_end = rdtscp(&cycle_aux);
+	asm volatile("mfence");
 
 	/* Pointer chasing read and write */
 
@@ -349,6 +365,7 @@ void vanilla_ptr_chasing(covert_info_t *ci)
 	PC_AFTER_READ
 
 	cycle_end = rdtscp(&cycle_aux);
+	cycle_ddl_end = cycle_end;
 
 	COVERT_PC_STRIDED_PRINT_MEASUREMENT(
 		chasing_func_list[chasing_func_index]);
@@ -357,6 +374,15 @@ void vanilla_ptr_chasing(covert_info_t *ci)
 	kr_info("[%s] ", chasing_func_list[chasing_func_index].name);
 	CHASING_PRINT_RECORD_TIMING("lat_ld", (timing + repeat * 2));
 	kr_info("\n");
+
+
+	CLEAR_CPU_PIPELINE();
+	cycle_stats_end = rdtscp(&cycle_aux);
+	asm volatile("mfence");
+
+	RECORD_CYCLES(cr);
+	PRINT_CYCLES(cr, ci);
+	printf("\n");
 
 vanilla_ptr_chasing_end:
 	return;
