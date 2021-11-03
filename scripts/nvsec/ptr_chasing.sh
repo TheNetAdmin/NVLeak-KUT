@@ -221,11 +221,11 @@ debug)
 	stride_array=(256)
 	flush_l1_array=(0 1)
 	export no_slack=1
-	batch_result_dir="results/${job}/${batch_id}"
+	batch_result_dir="results/vanilla/${job}/${batch_id}"
 	bench_func
 	;;
 all)
-	batch_result_dir="results/${job}/${batch_id}"
+	batch_result_dir="results/vanilla/${job}/${batch_id}"
 	bench_func
 	;;
 *)

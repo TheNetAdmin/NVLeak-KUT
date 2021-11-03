@@ -271,14 +271,18 @@ debug_single)
 	bench_func
 	;;
 debug_small)
-	region_array=($((2 ** 12)))
+	region_array=($((2 ** 11)))
 	stride_array=($((2 ** 21)))
 	flush_l1_array=(0)
 	repeat_array=(16)
-	iter_cycle_ddl_base=$((70000))
+	covert_chasing_store=0
+	covert_chasing_load=1
+	# iter_cycle_ddl_base=$((1))
+	iter_cycle_ddl_base=$((30000))
 	flush_after_load_array=(1)
+	# receiver_page_offset_array=(1)
 	receiver_page_offset_array=($(seq -s ' ' 0 15))
-	covert_fid_array=(2)
+	covert_fid_array=(1)
 	export no_slack=1
 	batch_result_dir="results/${job}/${batch_id}"
 	bench_func
