@@ -39,30 +39,33 @@ trap cleanup EXIT
 
 covert_fid_array=(
 	2
-	20
-	21
+	3
+	4
+	5
+	6
+	7
 )
 block_size=64
 stride_array=(
-	# $((2 ** 16))
-	# $((2 ** 17))
-	# $((2 ** 18))
-	# $((2 ** 19))
-	# $((2 ** 20)) # 2 ** 20 --> 1 MiB == 16MiB/16Way
+	$((2 ** 16))
+	$((2 ** 17))
+	$((2 ** 18))
+	$((2 ** 19))
+	$((2 ** 20)) # 2 ** 20 --> 1 MiB == 16MiB/16Way
 	$((2 ** 21))
-	# $((2 ** 22))
-	# $((2 ** 23))
-	# $((2 ** 24))
+	$((2 ** 22))
+	$((2 ** 23))
+	$((2 ** 24))
 )
 region_array=(
 	# $((2 **  7))
 	# $((2 **  8))
 	# $((2 **  9))
 	# $(seq -s ' ' $((2 ** 9)) $((2 ** 6)) $((2 ** 10 - 1)))
-	# $((2 ** 10)) # 16 * 64 --> 16 blocks --> 16 way
-	# $((2 ** 11))
+	$((2 ** 10)) # 16 * 64 --> 16 blocks --> 16 way
+	$((2 ** 11))
 	$((2 ** 12))
-	# $((2 ** 13))
+	$((2 ** 13))
 )
 sub_op_array=(1) # Covert channel: Pointer chasing read only
 repeat_array=(32)
@@ -72,8 +75,8 @@ fence_strategy_array=(0)
 fence_freq_array=(1)
 flush_after_load_array=(1)
 record_timing_array=(1) # 1: per_reapeat
-flush_l1_array=(0)
-receiver_page_offset_array=($(seq -s ' ' 0 255))
+flush_l1_array=(0 1)
+receiver_page_offset_array=(0 1 2 3 4 5 6 7 252 253 254 255)
 
 covert_chasing_store=0
 covert_chasing_load=1

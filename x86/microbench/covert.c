@@ -57,6 +57,7 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 	/* Current result */
 	covert_result_t *cr;
 
+	cycle_all_beg = wait_until_ddl(ci->cycle_global_beg, rdtscp(&cycle_aux), 1500000);
 	cycle_all_beg = rdtscp(&cycle_aux);
 	asm volatile("mfence");
 
