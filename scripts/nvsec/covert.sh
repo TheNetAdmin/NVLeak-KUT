@@ -38,6 +38,7 @@ cleanup() {
 trap cleanup EXIT
 
 covert_fid_array=(
+	2
 	20
 	21
 )

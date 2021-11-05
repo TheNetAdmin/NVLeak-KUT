@@ -80,7 +80,8 @@ region_array=(
     $(seq -s ' ' $((2 ** 14)) $((2 ** 13)) $((2 ** 16 - 1))) # [ 16KB,  64KB) per   8KB ->  6
     $(seq -s ' ' $((2 ** 16)) $((2 ** 14)) $((2 ** 19 - 1))) # [ 64KB, 512KB) per  32KB -> 15
     $(seq -s ' ' $((2 ** 19)) $((2 ** 16)) $((2 ** 20 - 1))) # [512KB,   1MB) per  64KB ->  7
-    $((2 ** 20))
+    $((2 ** 20)) $((2 ** 21)) $((2 ** 22)) $((2 ** 23))
+	$((2 ** 24)) $((2 ** 25)) $((2 ** 26)) $((2 ** 27))
 )
 repeat_array=(32)
 region_align=4096
@@ -163,7 +164,7 @@ function bench_func_inner() {
 											if ((region_size % block_size != 0)); then
 												continue
 											fi
-											if ((region_size * stride_size / block_size + region_align >= $((2 ** 29)))); then
+											if ((region_size * stride_size / block_size + region_align >= $((2 ** 32)))); then
 												continue
 											fi
 											
@@ -244,7 +245,14 @@ debug_small)
 		$((2 ** 20)) $((2 ** 21)) $((2 ** 22)) $((2 ** 23))
 		$((2 ** 24)) $((2 ** 25)) $((2 ** 26)) $((2 ** 27))
 	)
-	stride_array=(64)
+	# stride_array=(64)
+	stride_array=(
+		$((2 **  6)) $((2 **  7)) $((2 **  8)) $((2 **  9))
+		$((2 ** 10)) $((2 ** 11)) $((2 ** 12)) $((2 ** 13))
+		$((2 ** 14)) $((2 ** 15)) $((2 ** 16)) $((2 ** 17))
+		$((2 ** 18)) $((2 ** 19)) $((2 ** 20)) $((2 ** 21))
+		$((2 ** 22)) $((2 ** 23)) 
+	)
 	flush_l1_array=(1)
 	export no_slack=1
 	batch_result_dir="results/vanilla/${job}/${batch_id}"
