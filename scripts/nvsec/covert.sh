@@ -261,14 +261,14 @@ debug)
 	bench_func
 	;;
 debug_single)
-	region_array=($((2 ** 11)))
+	region_array=($((14 * 64)))
 	stride_array=($((2 ** 21)))
-	flush_l1_array=(0)
-	repeat_array=(16)
-	iter_cycle_ddl_base=$((35000))
+	flush_l1_array=(1)
+	repeat_array=(32)
+	iter_cycle_ddl_base=$((40000))
 	flush_after_load_array=(1)
 	receiver_page_offset_array=(0)
-	covert_fid_array=(10)
+	covert_fid_array=(2)
 	export no_slack=1
 	batch_result_dir="results/${job}/${batch_id}"
 	bench_func
