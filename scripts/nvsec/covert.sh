@@ -61,7 +61,7 @@ region_array=(
 	$(seq -s ' ' $((2 ** 9)) $((2 ** 6)) $((2 ** 10 - 1)))
 	$((2 ** 10)) # 16 * 64 --> 16 blocks --> 16 way
 	$((2 ** 11))
-	# $((2 ** 12))
+	$((2 ** 12))
 	# $((2 ** 13))
 )
 sub_op_array=(1) # Covert channel: Pointer chasing read only
