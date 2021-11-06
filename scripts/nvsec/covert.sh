@@ -77,7 +77,7 @@ receiver_page_offset_array=(0 1)
 
 covert_chasing_store=0
 covert_chasing_load=1
-iter_cycle_ddl_base=70000
+# iter_cycle_ddl_base=70000 # auto detected
 
 function run_qemu() {
 	# $1 sender | receiver
@@ -176,6 +176,8 @@ function bench_func_inner() {
 												continue
 											fi
 											
+											iter_cycle_ddl_base=$((region_size * 15))
+
 											task_id="$(date +%Y%m%d%H%M%S)-$(git rev-parse --short HEAD)-${TaskID:-$(hostname)}"
 											task_results_dir="${batch_result_dir}/${task_id}"
 											mkdir -p "${task_results_dir}"
