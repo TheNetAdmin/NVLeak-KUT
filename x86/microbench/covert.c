@@ -34,6 +34,8 @@ static inline uint64_t wait_until_ddl(uint64_t cycle_beg, uint64_t cycle_end,
 	return rdtscp(&aux);
 }
 
+#define CHANNEL_DISTANCE (4096 * 8)
+
 void covert_ptr_chasing_load_only(covert_info_t *ci)
 {
 	PC_VARS;
@@ -44,7 +46,7 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 	char *	  covert_channel;
 	/* KEEP IN SYNC WITH _print function */
 	char *	  bit_0_channel = ci->buf;
-	char *	  bit_1_channel = ci->buf + 4096;
+	char *	  bit_1_channel = ci->buf + CHANNEL_DISTANCE;
 	uint64_t *timing	= ci->timing;
 
 	uint64_t cycle_all_beg;
@@ -214,7 +216,7 @@ void covert_ptr_chasing_print(covert_info_t *ci)
 
 	char *	  covert_channel;
 	char *	  bit_0_channel = ci->buf;
-	char *	  bit_1_channel = ci->buf + 4096;
+	char *	  bit_1_channel = ci->buf + CHANNEL_DISTANCE;
 
 	kr_info("covert_strategy=ptr_chasing_load_only\n");
 	kr_info("Init bit 0 channel: %p\n", bit_0_channel);

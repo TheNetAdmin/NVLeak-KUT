@@ -125,49 +125,48 @@
 	cr->cycle_stats_end	  = cycle_stats_end;
 
 #define PRINT_COVERT_INFO(ci)                                                  \
-	kr_info("buf_addr %p\n", ci->buf);                                     \
-	kr_info("role_type=%u, "                                               \
-		"total_data_bits=%lu, "                                        \
-		"send_data=%p, "                                               \
-		"buf=%p, "                                                     \
-		"region_size=%lu, "                                            \
-		"region_skip=%lu, "                                            \
-		"block_size=%lu, "                                             \
-		"repeat=%lu, "                                                 \
-		"count=%lu, "                                                  \
-		"chasing_func_index=%lu, "                                     \
-		"strided_size=%lu, "                                           \
-		"region_align=%lu, "                                           \
-		"cindex=%p, "                                                  \
-		"timing=%p, "                                                  \
-		"covert_file_id=%lu, "                                         \
-		"iter_cycle_ddl=%lu, ",                                        \
-		ci->role_type,                                                 \
-		ci->total_data_bits,                                           \
-		ci->send_data,                                                 \
-		ci->buf,                                                       \
-		ci->region_size,                                               \
-		ci->region_skip,                                               \
-		ci->block_size,                                                \
-		ci->repeat,                                                    \
-		ci->count,                                                     \
-		ci->chasing_func_index,                                        \
-		ci->strided_size,                                              \
-		ci->region_align,                                              \
-		ci->cindex,                                                    \
-		ci->timing,                                                    \
-		ci->covert_file_id,                                            \
-		ci->iter_cycle_ddl                                             \
-		);                                                             \
-	kr_info("\n");                                                         \
-	kr_info("CHASING_FENCE_STRATEGY_ID=%d\n", CHASING_FENCE_STRATEGY_ID);  \
-	kr_info("CHASING_FENCE_FREQ_ID=%d\n", CHASING_FENCE_FREQ_ID);          \
-	kr_info("CHASING_FLUSH_AFTER_LOAD=%d\n", CHASING_FLUSH_AFTER_LOAD);    \
-	kr_info("CHASING_FLUSH_AFTER_STORE=%d\n", CHASING_FLUSH_AFTER_STORE);  \
-	kr_info("CHASING_FLUSH_L1=%d\n", CHASING_FLUSH_L1);                    \
-	kr_info("CHASING_FLUSH_L1_TYPE=%s\n", CHASING_FLUSH_L1_TYPE);          \
-	kr_info("COVERT_CHASING_STORE=%d\n", COVERT_CHASING_STORE);            \
-	kr_info("COVERT_CHASING_LOAD=%d\n", COVERT_CHASING_LOAD); 
+	printf("buf_addr %p\n\n", ci->buf);                                    \
+	printf("role_type=%u, "                                                \
+	       "total_data_bits=%lu, "                                         \
+	       "send_data=%p, "                                                \
+	       "buf=%p, "                                                      \
+	       "region_size=%lu, "                                             \
+	       "region_skip=%lu, "                                             \
+	       "block_size=%lu, "                                              \
+	       "repeat=%lu, "                                                  \
+	       "count=%lu, "                                                   \
+	       "chasing_func_index=%lu, "                                      \
+	       "strided_size=%lu, "                                            \
+	       "region_align=%lu, "                                            \
+	       "cindex=%p, "                                                   \
+	       "timing=%p, "                                                   \
+	       "covert_file_id=%lu, "                                          \
+	       "iter_cycle_ddl=%lu, ",                                         \
+	       ci->role_type,                                                  \
+	       ci->total_data_bits,                                            \
+	       ci->send_data,                                                  \
+	       ci->buf,                                                        \
+	       ci->region_size,                                                \
+	       ci->region_skip,                                                \
+	       ci->block_size,                                                 \
+	       ci->repeat,                                                     \
+	       ci->count,                                                      \
+	       ci->chasing_func_index,                                         \
+	       ci->strided_size,                                               \
+	       ci->region_align,                                               \
+	       ci->cindex,                                                     \
+	       ci->timing,                                                     \
+	       ci->covert_file_id,                                             \
+	       ci->iter_cycle_ddl                                              \
+	       );                                                              \
+	printf("CHASING_FENCE_STRATEGY_ID=%d,", CHASING_FENCE_STRATEGY_ID);    \
+	printf("CHASING_FENCE_FREQ_ID=%d,", CHASING_FENCE_FREQ_ID);            \
+	printf("CHASING_FLUSH_AFTER_LOAD=%d,", CHASING_FLUSH_AFTER_LOAD);      \
+	printf("CHASING_FLUSH_AFTER_STORE=%d,", CHASING_FLUSH_AFTER_STORE);    \
+	printf("CHASING_FLUSH_L1=%d,", CHASING_FLUSH_L1);                      \
+	printf("CHASING_FLUSH_L1_TYPE=%s,", CHASING_FLUSH_L1_TYPE);            \
+	printf("COVERT_CHASING_STORE=%d,", COVERT_CHASING_STORE);              \
+	printf("COVERT_CHASING_LOAD=%d\n", COVERT_CHASING_LOAD); 
 
 
 #define CLEAR_CPU_PIPELINE()                                                   \

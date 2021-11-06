@@ -70,5 +70,6 @@ gen_data_file "${fid}" 2 2048; ((fid+=1));
 gen_data_file "${fid}" 3 2048; ((fid+=1));
 gen_data_file "${fid}" 4  512; ((fid+=1));
 gen_data_file "${fid}" 5  512; ((fid+=1));
+gen_data_file "${fid}" 6  256; ((fid+=1));
 
 popd
