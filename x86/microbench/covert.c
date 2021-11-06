@@ -82,6 +82,28 @@ void covert_ptr_chasing_load_only(covert_info_t *ci)
 		ci->region_skip, ci->count, ci->repeat, ci->cindex, ci->timing);
 	asm volatile("mfence \n" :::);
 
+	/* Warm up */
+	size_t warm_up_iters = 8;
+	for (i = 0; i < warm_up_iters; i++) {
+		cycle_beg = rdtscp(&cycle_aux);
+		asm volatile("mfence");
+		if (i % 2 == 0) {
+			covert_channel = bit_0_channel;
+		} else {
+			covert_channel = bit_1_channel;
+		}
+
+		chasing_func_list[ci->chasing_func_index].ld_func(
+			covert_channel, ci->region_size, ci->strided_size,
+			ci->region_skip, ci->count, ci->repeat, ci->cindex,
+			ci->timing);
+
+		cycle_end = rdtscp(&cycle_aux);
+		asm volatile("mfence");
+		wait_until_ddl(cycle_beg, cycle_end, ci->iter_cycle_ddl);
+		asm volatile("mfence");
+	}
+
 	switch (ci->role_type) {
 	case 0: // sender
 		for (i = 0; i < ci->total_data_bits; i++) {
