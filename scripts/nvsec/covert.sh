@@ -65,7 +65,7 @@ region_array=(
 	# $((2 ** 13))
 )
 sub_op_array=(1) # Covert channel: Pointer chasing read only
-repeat_array=(32)
+repeat_array=(4 8 16 32)
 region_align=4096
 
 fence_strategy_array=(0)
