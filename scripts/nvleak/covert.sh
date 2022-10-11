@@ -16,6 +16,7 @@ source "$script_root/utils/profiler_none.sh"
 prepare() {
 	echo "Set host CPU into performance mode"
 	for line in $(find /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor); do
+		echo "Set CPU [$line] into performance mode"
 		echo "performance" >"$line"
 	done
 	# Disable cache prefetcher
@@ -198,6 +199,7 @@ function bench_func_inner() {
 													> >(tee -a "${task_results_dir}/receiver.log" > /dev/null) \
 													2>&1 \
 												&
+												receiver_id=$!
 
 												# sender
 												run_qemu \
@@ -214,8 +216,11 @@ function bench_func_inner() {
 													> >(tee -a "${task_results_dir}/sender.log" > /dev/null) \
 													2>&1 \
 												&
+												sender_id=$!
 
-												wait
+												echo "Receiver PID [$receiver_id] Sender PID [$sender_id]"
+												wait $receiver_id
+												wait $sender_id
 											}
 										done
 										iter=$((iter + 1))
@@ -235,7 +240,7 @@ function bench_func_inner() {
 
 	cleanup
 
-	slack_notice $SlackURL "[Finish  ] <@U01QVMG14HH> check results"
+	slack_notice $SlackURL "[Finish  ] check results"
 }
 
 function bench_func() {

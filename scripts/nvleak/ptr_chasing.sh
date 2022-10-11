@@ -207,7 +207,7 @@ function bench_func_inner() {
 
 	cleanup
 
-	slack_notice $SlackURL "[Finish  ] <@U01QVMG14HH> check results"
+	slack_notice $SlackURL "[Finish  ] check results"
 }
 
 function bench_func() {
