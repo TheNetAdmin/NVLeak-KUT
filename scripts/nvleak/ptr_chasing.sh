@@ -6,12 +6,13 @@ set -x
 batch_id="$(date +%Y%m%d%H%M%S)"
 
 script_root=$(realpath $(realpath $(dirname $0)))
+export no_slack=y
 source "$script_root/utils/slack.sh"
-export SlackURL=https://hooks.slack.com/services/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
+export SlackURL=https://hooks.slack.com/services/***/***/******
 
 source "$script_root/utils/remake.sh"
 source "$script_root/utils/search_backend_dev.sh"
-source "$script_root/utils/profiler_aepwatch.sh"
+source "$script_root/utils/profiler_none.sh"
 
 prepare() {
 	echo "Set host CPU into performance mode"
