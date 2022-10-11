@@ -80,7 +80,7 @@ ram_slots="2"     # >= number of ram + number of nvram
 ram_max_size="6G" # >= $ram_size + $nvram_size
 
 # QEMU path
-export QEMU="../qemu/build/x86_64-softmmu/qemu-system-x86_64"
+export QEMU="$HOME/qemu-6.2.0/build/qemu-system-x86_64"
 
 # QEMU configs
 nvram_size="4G"
