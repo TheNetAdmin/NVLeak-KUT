@@ -39,4 +39,4 @@ $(TEST_DIR)/svm.elf: $(TEST_DIR)/svm_tests.o
 
 $(TEST_DIR)/nvram_covert.elf: $(TEST_DIR)/microbench/chasing.o
 $(TEST_DIR)/nvram_covert.elf: $(TEST_DIR)/microbench/covert.o
-$(TEST_DIR)/nvram_covert.elf: COMMON_CFLAGS += -Wno-unused-function ${NVSEC_MAKE_ARGS}
+$(TEST_DIR)/nvram_covert.elf: COMMON_CFLAGS += -Wno-unused-function ${NVLEAK_MAKE_ARGS}

@@ -118,7 +118,7 @@ function bench_func_inner() {
 									# See following:
 									#   - src/Makefile
 									#   - src/microbench/chasing.h
-									NVSEC_MAKE_ARGS=$(cat <<- EOF
+									NVLEAK_MAKE_ARGS=$(cat <<- EOF
 										-DCHASING_FENCE_STRATEGY_ID="$fence_strategy" \
 										-DCHASING_FENCE_FREQ_ID="$fence_freq" \
 										-DCHASING_FLUSH_AFTER_LOAD="$flush_after_load" \
@@ -128,10 +128,10 @@ function bench_func_inner() {
 										-DCOVERT_CHASING_LOAD="$covert_chasing_load"
 									EOF
 									)
-									NVSEC_MAKE_ARGS="$(echo "$NVSEC_MAKE_ARGS" | tr -s '\t')"
-									export NVSEC_MAKE_ARGS
+									NVLEAK_MAKE_ARGS="$(echo "$NVLEAK_MAKE_ARGS" | tr -s '\t')"
+									export NVLEAK_MAKE_ARGS
 
-									remake_nvsec
+									remake_nvleak
 
 									# Discover covert data file and dump into dax dev
 									echo "Dump covert data to the backend file"

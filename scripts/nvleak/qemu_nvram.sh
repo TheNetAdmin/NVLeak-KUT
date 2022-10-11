@@ -7,7 +7,7 @@ set_cpu_perf_mode=${set_cpu_perf_mode:-1}
 dump_covert_data=${dump_covert_data:-1}
 
 usage() {
-	echo "Usage: $0 [sender|receiver|vanilla] [other args for nvsec_covert]"
+	echo "Usage: $0 [sender|receiver|vanilla] [other args for nvleak_covert]"
 }
 
 print_envs() {

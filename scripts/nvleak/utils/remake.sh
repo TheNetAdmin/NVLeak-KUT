@@ -1,6 +1,6 @@
 #!/bin/bash
 
-remake_nvsec() {
+remake_nvleak() {
 	make clean || true
 	make distclean || true
 
